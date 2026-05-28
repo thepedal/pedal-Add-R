@@ -24,11 +24,22 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Deploy just the .dll to the generators folder (Build §1.3) -->
+  <!-- Preset bundle as an ItemGroup item (Build §3.5) — necessary because the
+       filename has a space; a literal SourceFiles string fails silently. -->
+  <ItemGroup>
+    <PresetBundle Include="Pedal Add-R_Presets.prs.xml" />
+  </ItemGroup>
+
+  <!-- Deploy DLL + preset bundle to the generators folder (Build §1.3 / §3.5) -->
   <Target Name="DeployToReBuzz" AfterTargets="Build">
     <Message Text="Deploying $(TargetFileName) → C:\Program Files\ReBuzz\Gear\Generators\"
              Importance="high" />
     <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="C:\Program Files\ReBuzz\Gear\Generators\"
+          ContinueOnError="true" />
+    <Message Text="Deploying @(PresetBundle) → C:\Program Files\ReBuzz\Gear\Generators\"
+             Importance="high" />
+    <Copy SourceFiles="@(PresetBundle)"
           DestinationFolder="C:\Program Files\ReBuzz\Gear\Generators\"
           ContinueOnError="true" />
   </Target>

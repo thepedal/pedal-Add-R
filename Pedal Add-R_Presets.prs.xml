@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PresetDictionary>
+  <Item Key="Pad - Soft Organ">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="60" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="25" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="50" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="50" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="60" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Pad - Glass">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="50" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="90" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="20" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="100" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="60" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="80" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Pad - String Ensemble">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="70" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="100" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="75" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="70" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="90" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Pad - Choir Aaah">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="55" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="110" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="90" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="80" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="100" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Bell - Crystal">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="95" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="80" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="40" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="70" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="0" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="0" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="2" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="40" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="30" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Bell - Tubular">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="70" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="75" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="25" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="0" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="0" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="2" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="50" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="50" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Mallet - Marimba">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="30" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="70" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="60" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="100" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="0" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="0" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="2" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="30" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="20" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Pluck - Harp">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="75" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="50" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="90" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="0" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="0" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="1" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="25" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Pluck - Pizzicato">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="24" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="60" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="80" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="110" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="0" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="0" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="1" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="30" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="15" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Bass - Sub">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="12" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="30" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="50" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="90" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="0" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="0" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="2" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="50" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="25" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="FX - Wobbling Glass">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="40" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="80" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="127" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="70" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="100" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="110" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="FX - Slow Drone">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="20" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="25" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="90" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="60" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="120" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="127" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+</PresetDictionary>

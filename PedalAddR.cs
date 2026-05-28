@@ -6,7 +6,7 @@ using BuzzGUI.Interfaces;      // IParameter, ParameterType, IBuzz (.Graph.Buzz.
 
 namespace PedalAddR
 {
-    // Pedal Add-R v0.3 — 8-voice polyphonic time-domain additive synth.
+    // Pedal Add-R v0.4 — 8-voice polyphonic time-domain additive synth.
     // Single mixed output; chord polyphony from notes on multiple tracks at the
     // same row (track index = voice index, M1 §1). Generator: bool Work(...).
     [MachineDecl(
@@ -28,6 +28,7 @@ namespace PedalAddR
         float[] _voiceBuf = new float[256];
         float[] _mix      = new float[256];
         float _lastSr;
+        float _scale;                                // smoothed Volume×MixHeadroom (per-sample one-pole)
         bool  _wasPlaying;
 
         // §14/§42 multi-track note recovery (lazy reflection, shape-tolerant).
@@ -37,7 +38,7 @@ namespace PedalAddR
         public PedalAddRMachine(IBuzzMachineHost host)
         {
             _host = host;
-            // Distinct, well-spread seeds so each voice's drift RNG is independent.
+            // Distinct, well-spread seeds so each voice's drift/phase RNG is independent.
             for (int i = 0; i < MAX_VOICES; i++)
                 _voices[i] = new Voice(unchecked((int)((i + 1) * 0x9E3779B1L)));
         }
@@ -55,7 +56,7 @@ namespace PedalAddR
         public int Inharmonic { get; set; } = 0;
 
         [ParameterDecl(Name = "Brightness", MinValue = 0, MaxValue = 127, DefValue = 70,
-            Description = "Spectral tilt — low = dark (steep), high = bright. Latches at note-on")]
+            Description = "Spectral tilt — low = dark (steep), high = bright. Live (loudness-neutral)")]
         public int Brightness { get; set; } = 70;
 
         [ParameterDecl(Name = "Damping", MinValue = 0, MaxValue = 127, DefValue = 0,
@@ -69,6 +70,10 @@ namespace PedalAddR
         [ParameterDecl(Name = "Drift", MinValue = 0, MaxValue = 127, DefValue = 0,
             Description = "Per-partial slow random detune — ensemble/chorus from within")]
         public int Drift { get; set; } = 0;
+
+        [ParameterDecl(Name = "Phase", MinValue = 0, MaxValue = 127, DefValue = 0,
+            Description = "Inter-partial phase spread at note-on — 0 = sharp strike, up = smeared smooth onset")]
+        public int Phase { get; set; } = 0;
 
         [ParameterDecl(Name = "Attack", MinValue = 0, MaxValue = 127, DefValue = 4)]
         public int Attack { get; set; } = 4;
@@ -167,22 +172,24 @@ namespace PedalAddR
             {
                 for (int t = 0; t < MAX_VOICES; t++) _voices[t].SetSampleRate(sr);   // Core §29
                 _lastSr = sr;
+                _scale  = (Volume / 127f) * MixHeadroom;     // snap on first Work / sr change so we don't fade-in on load
             }
 
             // Map params and push to every voice before draining notes.
-            float b        = Inharmonic / 127f;  b = b * b * 0.04f;             // 0 .. 0.04
-            float slope    = 2.0f - (Brightness / 127f) * 1.6f;                 // 2.0 (dark) .. 0.4 (bright)
-            float dGlobal  = Damping / 127f;     dGlobal = dGlobal * dGlobal * 60f;   // 0 .. 60 /s
-            float dampTilt = (DampTilt / 127f) * 2f;                            // 0 .. 2
-            float driftN   = Drift / 127f;       float driftDepth = driftN * driftN * 0.04f;   // 0 .. ±~70 cents peak
-            float glideSec = Glide == 0 ? 0f : MinTimeSec * MathF.Pow(2f, (Glide / 127f) * 11f);
-            float glideCoef = glideSec <= 0f ? 1f : 1f - MathF.Exp(-32f / (glideSec * sr));
+            float b           = Inharmonic / 127f;  b = b * b * 0.04f;             // 0 .. 0.04
+            float slope       = 2.0f - (Brightness / 127f) * 1.6f;                 // 2.0 (dark) .. 0.4 (bright)
+            float dGlobal     = Damping / 127f;     dGlobal = dGlobal * dGlobal * 60f;   // 0 .. 60 /s
+            float dampTilt    = (DampTilt / 127f) * 2f;                            // 0 .. 2
+            float driftN      = Drift / 127f;       float driftDepth = driftN * driftN * 0.04f;   // 0 .. ±~70 cents peak
+            float phaseSpread = Phase / 127f;                                      // 0 .. 1 (linear)
+            float glideSec    = Glide == 0 ? 0f : MinTimeSec * MathF.Pow(2f, (Glide / 127f) * 11f);
+            float glideCoef   = glideSec <= 0f ? 1f : 1f - MathF.Exp(-32f / (glideSec * sr));
             float aSec = TimeSec(Attack), dSec = TimeSec(Decay), rSec = TimeSec(Release);
             float sustainN = Sustain / 127f;
 
             for (int t = 0; t < MAX_VOICES; t++)
-                _voices[t].SetParams(Partials, b, slope, dGlobal, dampTilt, driftDepth, glideCoef,
-                                     aSec, dSec, sustainN, rSec);
+                _voices[t].SetParams(Partials, b, slope, dGlobal, dampTilt, driftDepth, phaseSpread,
+                                     glideCoef, aSec, dSec, sustainN, rSec);
 
             // Transport-stop fast-fade on the falling edge of Playing (Core §27).
             bool nowPlaying = _wasPlaying;
@@ -227,10 +234,13 @@ namespace PedalAddR
                 for (int i = 0; i < n; i++) _mix[i] += _voiceBuf[i];
             }
 
-            float scale = (Volume / 127f) * MixHeadroom;
+            float targetScale = (Volume / 127f) * MixHeadroom;
+            // ~2 ms one-pole on the output scale so Volume jumps don't click.
+            float scaleCoef = 1f - MathF.Exp(-1f / (0.002f * sr));
             for (int i = 0; i < n; i++)
             {
-                float s = DspMath.SoftClip(_mix[i] * scale) * 32768f;   // PedalComp §1 sample scale
+                _scale += (targetScale - _scale) * scaleCoef;
+                float s = DspMath.SoftClip(_mix[i] * _scale) * 32768f;   // PedalComp §1 sample scale
                 output[i] = new Sample(s, s);
             }
             return true;
