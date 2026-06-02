@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using Buzz.MachineInterface;   // IBuzzMachine, IBuzzMachineHost, MachineDecl, ParameterDecl, Note, Sample, WorkModes
-using BuzzGUI.Interfaces;      // IParameter, ParameterType, IBuzz (.Graph.Buzz.Playing)
+using Buzz.MachineInterface;
+using BuzzGUI.Interfaces;
 
 namespace PedalAddR
 {
-    // Pedal Add-R v0.4 — 8-voice polyphonic time-domain additive synth.
-    // Single mixed output; chord polyphony from notes on multiple tracks at the
-    // same row (track index = voice index, M1 §1). Generator: bool Work(...).
+    // Pedal Add-R v0.6 — 8-voice polyphonic time-domain additive synth with LFO.
     [MachineDecl(
         Name        = "Pedal Add-R",
         ShortName   = "Add-R",
@@ -18,32 +16,36 @@ namespace PedalAddR
         OutputCount = 1)]
     public class PedalAddRMachine : IBuzzMachine
     {
-        public const int MAX_VOICES = 8;        // = MaxTracks; compile-time const for the attribute
+        public const int MAX_VOICES = 8;
 
         const float MinTimeSec  = 0.001f;
-        const float MixHeadroom = 0.4f;         // per-mix scaling so chords don't slam the clip (M1 §10)
+        const float MixHeadroom = 0.4f;
+
+        // LFO destination scaling — chosen so max amount + LFO extremes give
+        // a musically dramatic but not unstable swing.
+        const float LfoMaxPitchSemi = 6f;       // ±6 semitones (half octave) at full amount + LFO=±1
+        const float LfoMaxSlopeDelta = 1.0f;    // ±1.0 slope delta (slope base is 0.4..2.0)
+        const float LfoMaxBDelta     = 0.04f;   // ±0.04 (B base is 0..0.04)
+        const float LfoMaxDriftDelta = 0.04f;   // ±0.04 (drift base is 0..0.04)
 
         readonly IBuzzMachineHost _host;
         readonly Voice[] _voices = new Voice[MAX_VOICES];
         float[] _voiceBuf = new float[256];
         float[] _mix      = new float[256];
         float _lastSr;
-        float _scale;                                // smoothed Volume×MixHeadroom (per-sample one-pole)
         bool  _wasPlaying;
 
-        // §14/§42 multi-track note recovery (lazy reflection, shape-tolerant).
         IParameter    _ownNoteParam;
         Func<int,int> _ownNotePValues;
 
         public PedalAddRMachine(IBuzzMachineHost host)
         {
             _host = host;
-            // Distinct, well-spread seeds so each voice's drift/phase RNG is independent.
             for (int i = 0; i < MAX_VOICES; i++)
                 _voices[i] = new Voice(unchecked((int)((i + 1) * 0x9E3779B1L)));
         }
 
-        // ── Global parameters ────────────────────────────────────────────────
+        // ── Globals ─────────────────────────────────────────────────────────
         [ParameterDecl(Name = "Volume", MinValue = 0, MaxValue = 127, DefValue = 100)]
         public int Volume { get; set; } = 100;
 
@@ -91,27 +93,53 @@ namespace PedalAddR
             Description = "0 = instant, up = portamento time")]
         public int Glide { get; set; } = 0;
 
-        // ── Note (track parameter) ───────────────────────────────────────────
+        // ── New in v0.6 — LFO appended at end so v0.5 preset indices stay valid ──
+
+        [ParameterDecl(Name = "LFO Speed", MinValue = 0, MaxValue = 127, DefValue = 30,
+            Description = "LFO rate, log-mapped ~0.02 Hz to ~20 Hz")]
+        public int LfoSpeed { get; set; } = 30;
+
+        [ParameterDecl(Name = "LFO Wave", MinValue = 0, MaxValue = 3, DefValue = 0,
+            Description = "0 = Sine, 1 = Triangle, 2 = Square, 3 = Sample & Hold")]
+        public int LfoWave { get; set; } = 0;
+
+        [ParameterDecl(Name = "LFO Sync", MinValue = 0, MaxValue = 127, DefValue = 0,
+            Description = "Per-voice LFO phase randomness at NoteOn — 0 = lockstep, max = chord shimmer")]
+        public int LfoSync { get; set; } = 0;
+
+        [ParameterDecl(Name = "Mod Pitch", MinValue = 0, MaxValue = 127, DefValue = 64,
+            Description = "LFO modulation depth for pitch (vibrato). 64 = off, ±63 = ±6 semitones")]
+        public int LfoToPitch { get; set; } = 64;
+
+        [ParameterDecl(Name = "Mod Bright", MinValue = 0, MaxValue = 127, DefValue = 64,
+            Description = "LFO modulation depth for brightness (wah). 64 = off")]
+        public int LfoToBright { get; set; } = 64;
+
+        [ParameterDecl(Name = "Mod Inharm", MinValue = 0, MaxValue = 127, DefValue = 64,
+            Description = "LFO modulation depth for inharmonicity. 64 = off")]
+        public int LfoToInharm { get; set; } = 64;
+
+        [ParameterDecl(Name = "Mod Drift", MinValue = 0, MaxValue = 127, DefValue = 64,
+            Description = "LFO modulation depth for drift depth. 64 = off")]
+        public int LfoToDrift { get; set; } = 64;
+
+        // ── Note (track parameter) ──────────────────────────────────────────
         [ParameterDecl(Name = "Note", IsStateless = true,
             Description = "z=C-4, s=C#-4 …")]
         public void SetNote(Note value, int track)
         {
-            if ((uint)track >= MAX_VOICES) return;     // external writes can exceed MaxTracks (invFFT §24)
+            if ((uint)track >= MAX_VOICES) return;
             SetVoicePending(track, value.Value);
 
-            // Recover sibling tracks of a chord row — ReBuzz delivers only the
-            // last track's SetNote; the rest survive in pvalues until the
-            // post-tick reset. Shape-tolerant reader handles both layouts
-            // (Core §42): ConcurrentDictionary ≤1826, int[256] 1827+.
             if (_ownNotePValues == null) TryInitPValues();
             if (_ownNotePValues != null)
             {
-                int noVal = _ownNoteParam.NoValue;     // 0 for Note type
+                int noVal = _ownNoteParam.NoValue;
                 for (int t = 0; t < MAX_VOICES; t++)
                 {
                     if (t == track) continue;
                     var v = _voices[t];
-                    if (v.HasNoteOn || v.HasNoteOff) continue;   // a real setter call wins
+                    if (v.HasNoteOn || v.HasNoteOff) continue;
                     int pv = _ownNotePValues(t);
                     if (pv != noVal && pv != 0) SetVoicePending(t, (byte)pv);
                 }
@@ -121,7 +149,7 @@ namespace PedalAddR
         void SetVoicePending(int track, byte b)
         {
             var v = _voices[track];
-            if (b == 0) return;                         // no event this tick
+            if (b == 0) return;
             if (b == 255) { v.HasNoteOff = true; v.HasNoteOn = false; }
             else          { v.HasNoteOn = true; v.HasNoteOff = false; v.PendingBuzzNote = b; }
         }
@@ -132,7 +160,7 @@ namespace PedalAddR
             {
                 if (_ownNoteParam == null)
                 {
-                    var pg = _host?.Machine?.ParameterGroups;   // populated after the ctor (Core §15)
+                    var pg = _host?.Machine?.ParameterGroups;
                     if (pg == null) return;
                     foreach (var g in pg)
                     {
@@ -145,61 +173,72 @@ namespace PedalAddR
                 if (_ownNoteParam != null && _ownNotePValues == null)
                     _ownNotePValues = GetPValuesReader(_ownNoteParam);
             }
-            catch { /* recovery is best-effort; never throw from a setter */ }
+            catch { }
         }
 
-        // track -> raw pvalue (or NoValue). Tolerates both backing shapes (Core §42).
         static Func<int,int> GetPValuesReader(IParameter p)
         {
             int noVal = p.NoValue;
             var fi = p.GetType().GetField("pvalues",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             object raw = fi?.GetValue(p);
-            if (raw is ConcurrentDictionary<int,int> dict)            // ≤1826
+            if (raw is ConcurrentDictionary<int,int> dict)
                 return t => dict.TryGetValue(t, out int v) ? v : noVal;
-            if (raw is int[] arr)                                     // 1827+
+            if (raw is int[] arr)
                 return t => (uint)t < (uint)arr.Length ? arr[t] : noVal;
-            return _ => noVal;                                        // unknown → recovery off, machine still runs
+            return _ => noVal;
         }
 
         static float TimeSec(int p) => MinTimeSec * MathF.Pow(2f, (p / 127f) * 13f);
 
-        // ── Audio ────────────────────────────────────────────────────────────
+        // LFO speed: log-mapped 0.02 Hz to 20 Hz across 0..127.
+        static float LfoSpeedHz(int p) => 0.02f * MathF.Pow(1000f, p / 127f);
+
         public bool Work(Sample[] output, int n, WorkModes mode)
         {
             float sr = _host?.MasterInfo?.SamplesPerSec ?? 44100f;
             if (MathF.Abs(sr - _lastSr) > 0.5f)
             {
-                for (int t = 0; t < MAX_VOICES; t++) _voices[t].SetSampleRate(sr);   // Core §29
+                for (int t = 0; t < MAX_VOICES; t++) _voices[t].SetSampleRate(sr);
                 _lastSr = sr;
-                _scale  = (Volume / 127f) * MixHeadroom;     // snap on first Work / sr change so we don't fade-in on load
             }
 
-            // Map params and push to every voice before draining notes.
-            float b           = Inharmonic / 127f;  b = b * b * 0.04f;             // 0 .. 0.04
-            float slope       = 2.0f - (Brightness / 127f) * 1.6f;                 // 2.0 (dark) .. 0.4 (bright)
-            float dGlobal     = Damping / 127f;     dGlobal = dGlobal * dGlobal * 60f;   // 0 .. 60 /s
-            float dampTilt    = (DampTilt / 127f) * 2f;                            // 0 .. 2
-            float driftN      = Drift / 127f;       float driftDepth = driftN * driftN * 0.04f;   // 0 .. ±~70 cents peak
-            float phaseSpread = Phase / 127f;                                      // 0 .. 1 (linear)
+            // Static param mappings.
+            float b           = Inharmonic / 127f;  b = b * b * 0.04f;
+            float slope       = 2.0f - (Brightness / 127f) * 1.6f;
+            float dGlobal     = Damping / 127f;     dGlobal = dGlobal * dGlobal * 60f;
+            float dampTilt    = (DampTilt / 127f) * 2f;
+            float driftN      = Drift / 127f;       float driftDepth = driftN * driftN * 0.04f;
+            float phaseSpread = Phase / 127f;
             float glideSec    = Glide == 0 ? 0f : MinTimeSec * MathF.Pow(2f, (Glide / 127f) * 11f);
             float glideCoef   = glideSec <= 0f ? 1f : 1f - MathF.Exp(-32f / (glideSec * sr));
             float aSec = TimeSec(Attack), dSec = TimeSec(Decay), rSec = TimeSec(Release);
             float sustainN = Sustain / 127f;
 
+            // LFO mappings. Bipolar destinations: (val-64)/64 → -1..+0.984
+            float lfoSpeedHz  = LfoSpeedHz(LfoSpeed);
+            int   lfoWave     = LfoWave;
+            float lfoSync     = LfoSync / 127f;
+            float lfoPitchAmt  = (LfoToPitch  - 64) / 64f * LfoMaxPitchSemi;
+            float lfoBrightAmt = (LfoToBright - 64) / 64f * LfoMaxSlopeDelta;
+            float lfoInharmAmt = (LfoToInharm - 64) / 64f * LfoMaxBDelta;
+            float lfoDriftAmt  = (LfoToDrift  - 64) / 64f * LfoMaxDriftDelta;
+
             for (int t = 0; t < MAX_VOICES; t++)
                 _voices[t].SetParams(Partials, b, slope, dGlobal, dampTilt, driftDepth, phaseSpread,
-                                     glideCoef, aSec, dSec, sustainN, rSec);
+                                     glideCoef, aSec, dSec, sustainN, rSec,
+                                     lfoSpeedHz, lfoWave, lfoSync,
+                                     lfoPitchAmt, lfoBrightAmt, lfoInharmAmt, lfoDriftAmt);
 
-            // Transport-stop fast-fade on the falling edge of Playing (Core §27).
+            // Transport-stop fade (Core §27).
             bool nowPlaying = _wasPlaying;
             try { nowPlaying = _host?.Machine?.Graph?.Buzz?.Playing ?? false; }
-            catch { /* keep previous on a poll glitch — never break audio */ }
+            catch { }
             if (_wasPlaying && !nowPlaying)
                 for (int t = 0; t < MAX_VOICES; t++) _voices[t].ForceFade(sr);
             _wasPlaying = nowPlaying;
 
-            // Drain pending note events per voice.
+            // Drain note events.
             for (int t = 0; t < MAX_VOICES; t++)
             {
                 var v = _voices[t];
@@ -234,13 +273,10 @@ namespace PedalAddR
                 for (int i = 0; i < n; i++) _mix[i] += _voiceBuf[i];
             }
 
-            float targetScale = (Volume / 127f) * MixHeadroom;
-            // ~2 ms one-pole on the output scale so Volume jumps don't click.
-            float scaleCoef = 1f - MathF.Exp(-1f / (0.002f * sr));
+            float scale = (Volume / 127f) * MixHeadroom;
             for (int i = 0; i < n; i++)
             {
-                _scale += (targetScale - _scale) * scaleCoef;
-                float s = DspMath.SoftClip(_mix[i] * _scale) * 32768f;   // PedalComp §1 sample scale
+                float s = DspMath.SoftClip(_mix[i] * scale) * 32768f;
                 output[i] = new Sample(s, s);
             }
             return true;

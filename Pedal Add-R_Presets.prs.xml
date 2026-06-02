@@ -16,6 +16,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="60" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -37,6 +44,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="80" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -58,6 +72,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="90" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -79,6 +100,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="100" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -100,6 +128,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="30" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -121,6 +156,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="50" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -142,6 +184,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="20" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -163,6 +212,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="25" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -184,6 +240,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="15" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -205,6 +268,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="0" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="25" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -226,6 +296,13 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="110" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -247,6 +324,125 @@
         <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
         <Parameter Name="Release" Group="1" Index="11" Track="0" Value="127" />
         <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Lead - Vibrato Sax">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="32" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="5" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="75" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="10" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="30" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="5" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="30" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="100" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="30" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="20" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="65" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="72" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Pad - Pulsing Glass">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="50" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="90" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="20" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="100" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="60" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="80" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="35" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="0" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="64" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="88" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="72" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="Pad - Ensemble Shimmer">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="48" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="0" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="70" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="0" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="80" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="100" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="75" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="70" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="60" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="127" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="90" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="30" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="0" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="127" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="68" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="75" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="64" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
+      </Parameters>
+      <Attributes />
+      <Comment></Comment>
+    </Preset>
+  </Item>
+  <Item Key="FX - SH Glitch">
+    <Preset Machine="Pedal Add-R">
+      <Parameters>
+        <Parameter Name="Volume" Group="1" Index="0" Track="0" Value="100" />
+        <Parameter Name="Partials" Group="1" Index="1" Track="0" Value="40" />
+        <Parameter Name="Inharmonic" Group="1" Index="2" Track="0" Value="35" />
+        <Parameter Name="Brightness" Group="1" Index="3" Track="0" Value="75" />
+        <Parameter Name="Damping" Group="1" Index="4" Track="0" Value="20" />
+        <Parameter Name="Damp Tilt" Group="1" Index="5" Track="0" Value="60" />
+        <Parameter Name="Drift" Group="1" Index="6" Track="0" Value="0" />
+        <Parameter Name="Phase" Group="1" Index="7" Track="0" Value="0" />
+        <Parameter Name="Attack" Group="1" Index="8" Track="0" Value="5" />
+        <Parameter Name="Decay" Group="1" Index="9" Track="0" Value="80" />
+        <Parameter Name="Sustain" Group="1" Index="10" Track="0" Value="50" />
+        <Parameter Name="Release" Group="1" Index="11" Track="0" Value="40" />
+        <Parameter Name="Glide" Group="1" Index="12" Track="0" Value="0" />
+        <Parameter Name="LFO Speed" Group="1" Index="13" Track="0" Value="85" />
+        <Parameter Name="LFO Wave" Group="1" Index="14" Track="0" Value="3" />
+        <Parameter Name="LFO Sync" Group="1" Index="15" Track="0" Value="70" />
+        <Parameter Name="Mod Pitch" Group="1" Index="16" Track="0" Value="92" />
+        <Parameter Name="Mod Bright" Group="1" Index="17" Track="0" Value="64" />
+        <Parameter Name="Mod Inharm" Group="1" Index="18" Track="0" Value="80" />
+        <Parameter Name="Mod Drift" Group="1" Index="19" Track="0" Value="64" />
       </Parameters>
       <Attributes />
       <Comment></Comment>

@@ -38,6 +38,12 @@ z ← z · (cos ω + j·sin ω)        out += amp · real(z)
   from the per-voice RNG, smearing the onset energy for smooth pad attacks.
   Phase is determined by rotor history once running, so this is a note-on-time
   control by design, not a continuous modulation.
+- **LFO** is per-voice, key-synced with a `Sync` parameter that scales how
+  randomised the start phase is at NoteOn (0 = all voices lock-step,
+  127 = each voice gets a fully independent random phase — chord shimmer).
+  Four wave shapes (Sine, Triangle, Square, Sample & Hold) and four bipolar
+  destinations (pitch, brightness, inharmonicity, drift depth) routable
+  simultaneously following the M1 §14 routing pattern.
 
 Amplitude is split into a **shape** (`1/nˢ`, recomputed live at control rate so
 Brightness can move mid-note, normalised so loudness stays constant as the
@@ -71,28 +77,38 @@ over ~5 ms (Core §27).
 | Phase        | 0–127  | Inter-partial phase spread at note-on (sharp ↔ smeared)     |
 | Attack/Decay/Sustain/Release | 0–127 | Amp ADSR (times ≈1 ms … ≈8 s)            |
 | Glide        | 0–127  | 0 = instant, up = portamento                                |
+| LFO Speed    | 0–127  | Log-mapped ~0.02 Hz to ~20 Hz                               |
+| LFO Wave     | 0–3    | Sine / Triangle / Square / Sample & Hold                    |
+| LFO Sync     | 0–127  | Per-voice random LFO phase at NoteOn (0 = lockstep)         |
+| Mod Pitch    | 0–127  | Bipolar LFO→Pitch, 64 = off, ±63 = ±6 semitones             |
+| Mod Bright   | 0–127  | Bipolar LFO→slope modulation, 64 = off                      |
+| Mod Inharm   | 0–127  | Bipolar LFO→inharmonicity modulation, 64 = off              |
+| Mod Drift    | 0–127  | Bipolar LFO→drift-depth modulation, 64 = off                |
 | Note         | track  | z=C-4, s=C#-4 …                                             |
 
 Starting points: organ/pad = Damping 0, Brightness mid, a little Drift, Phase
 mid-high (smooth onset); lush string ensemble = Damping 0 + Drift high + Phase
 mid, played as a chord; struck bell = Inharmonic high + Damping mid + Sustain 0
 + Phase 0 (sharp strike); pluck = Inharmonic low + Damping high + fast attack +
-Sustain 0 + Phase 0. Now also try sweeping Brightness while a sustained chord
-holds — that's what live spectrum looks like in this engine.
+Sustain 0 + Phase 0. Try also: sweeping Brightness while a sustained chord
+holds, and playing a chord with LFO Sync maxed — each voice gets its own
+LFO phase, so the modulation moves through the chord rather than across it.
 
 ## Presets
 
-Ships with `Pedal Add-R_Presets.prs.xml` — 12 starter patches showing the
-range:
+Ships with `Pedal Add-R_Presets.prs.xml` — 16 patches showing the range:
 
 - **Pad** — Soft Organ, Glass, String Ensemble, Choir Aaah (sustained side)
 - **Bell / Mallet / Pluck** — Crystal, Tubular, Marimba, Harp, Pizzicato (struck side)
 - **Bass** — Sub (low-partial harmonic)
-- **FX** — Wobbling Glass, Slow Drone (extremes)
+- **FX** — Wobbling Glass, Slow Drone (drift extremes), SH Glitch (LFO)
+- **Lead** — Vibrato Sax (LFO sine on pitch)
+- **LFO-driven pads** — Pulsing Glass (slow brightness/inharm sweep),
+  Ensemble Shimmer (max LFO Sync — per-voice phase, chord-shimmer)
 
 Right-click the machine to load. Per Build §3.3's append-only rule, the
-preset indices stay stable across future versions; adding LFO / formant
-later just gives existing presets the new params' defaults.
+preset indices stay stable across future versions; adding formant /
+excitation later just gives existing presets the new params' defaults.
 
 The bundle is generated from `gen_presets.py` (sparse-override pattern,
 Build §3.4) — edit that and re-run rather than hand-editing the XML.
@@ -113,7 +129,7 @@ space). If ReBuzz is installed elsewhere, change the path in the two
 **Done:** the partial-bank engine, the additive↔modal morph, 8-voice polyphony
 with chord recovery, transport-stop fade, mixer headroom, per-voice Drift,
 Phase spread, live Brightness, starter preset bank, click-protect retrigger
-(v0.5).
+(v0.5), per-voice key-synced LFO with 4 destinations (v0.6).
 
 Retrigger semantics: a *fresh* trigger (voice was idle) seeds the bank
 immediately and lets the ADSR Attack ramp up from level 0 — output starts
@@ -127,15 +143,24 @@ discontinuity still happens — it has to — but at the trough where the gain
 masks it by ~46 dB. Total retrigger gap ~5 ms, well under the perceptual
 latency floor for percussive material.
 
-**Next:**
+**Path to 1.0:**
 
-- **Per-voice key-synced LFO** with a random sync offset (invFFT §21.2), routable
-  to inharmonicity / brightness / pitch / drift — adds a whole modulation source.
-- **Excitation blend** (strike↔drive) and **Formant** (a movable spectral peak).
+- **v0.7 — Formant.** One movable resonant peak (Cutoff / Q / Amount) layered
+  over the additive bank. Adds vocal / vowel character to Choir Aaah, String
+  Ensemble, the pad family generally. The one missing color.
+- **v0.8 — Velocity + final preset expansion.** Track `Volume` parameter as
+  velocity (M1 §14 pattern) routing to amp + attack. Bank grows to ~24–32
+  patches showing the full surface.
+- **v1.0 — Polish.** Final profile pass on the stress patch, doc tidy, ship.
+
+Held for v1.x: **Excitation blend** (strike ↔ drive) — pushes the engine
+from "additive synth" toward "complex distortion synth"; that's a separate
+identity and worth its own release.
 
 ## Files
 
 `PedalAddR.cs` (machine + params + §42 note recovery + Work), `Voice.cs`
-(partial-bank engine + drift + phase + live brightness + ADSR), `DspMath.cs`
-(FastPow2, note conversion, soft clip), `gen_presets.py` (source-only),
-`Pedal Add-R_Presets.prs.xml` (deployed bundle), the `.csproj`.
+(partial-bank engine + drift + phase + live brightness + click-protect +
+LFO + ADSR), `DspMath.cs` (FastPow2, note conversion, soft clip),
+`gen_presets.py` (source-only), `Pedal Add-R_Presets.prs.xml` (deployed
+bundle), the `.csproj`.

@@ -10,10 +10,6 @@ Conventions:
   • Parameter Index is *declaration order* — Build §3.3 append-only rule:
     NEVER reorder or insert; only append at the end. Existing preset
     indices must remain stable across versions.
-
-Future additions (LFO, formant, …) get tacked onto PARAM_INDEX/DEFAULTS
-at the bottom; existing presets continue to load without edits and just
-take the new params' DefValues.
 """
 
 from pathlib import Path
@@ -21,43 +17,60 @@ from pathlib import Path
 MACHINE_NAME = "Pedal Add-R"
 OUT_FILE     = "Pedal Add-R_Presets.prs.xml"
 
-# Declaration order from PedalAddR.cs (v0.4) — append-only.
+# Declaration order from PedalAddR.cs — append-only.
+# v0.5: Volume..Glide (indices 0..12)
+# v0.6: LFO params appended (indices 13..19)
 PARAM_INDEX = {
-    "Volume":     0,
-    "Partials":   1,
-    "Inharmonic": 2,
-    "Brightness": 3,
-    "Damping":    4,
-    "Damp Tilt":  5,
-    "Drift":      6,
-    "Phase":      7,
-    "Attack":     8,
-    "Decay":      9,
-    "Sustain":   10,
-    "Release":   11,
-    "Glide":     12,
+    "Volume":       0,
+    "Partials":     1,
+    "Inharmonic":   2,
+    "Brightness":   3,
+    "Damping":      4,
+    "Damp Tilt":    5,
+    "Drift":        6,
+    "Phase":        7,
+    "Attack":       8,
+    "Decay":        9,
+    "Sustain":     10,
+    "Release":     11,
+    "Glide":       12,
+    # ── v0.6 (LFO) ────────────────────────────
+    "LFO Speed":   13,
+    "LFO Wave":    14,
+    "LFO Sync":    15,
+    "Mod Pitch":  16,
+    "Mod Bright": 17,
+    "Mod Inharm": 18,
+    "Mod Drift":  19,
 }
 
 # Machine DefValues — mirror PedalAddR.cs.
 DEFAULTS = {
-    "Volume":     100,
-    "Partials":    48,
-    "Inharmonic":   0,
-    "Brightness":  70,
-    "Damping":      0,
-    "Damp Tilt":   80,
-    "Drift":        0,
-    "Phase":        0,
-    "Attack":       4,
-    "Decay":       60,
-    "Sustain":    127,
-    "Release":     40,
-    "Glide":        0,
+    "Volume":      100,
+    "Partials":     48,
+    "Inharmonic":    0,
+    "Brightness":   70,
+    "Damping":       0,
+    "Damp Tilt":    80,
+    "Drift":         0,
+    "Phase":         0,
+    "Attack":        4,
+    "Decay":        60,
+    "Sustain":     127,
+    "Release":      40,
+    "Glide":         0,
+    "LFO Speed":    30,
+    "LFO Wave":      0,
+    "LFO Sync":      0,
+    "Mod Pitch":   64,    # 64 = off (bipolar, mid)
+    "Mod Bright":  64,
+    "Mod Inharm":  64,
+    "Mod Drift":   64,
 }
 
 # Sparse per-preset overrides. Missing keys take DEFAULTS.
-# Naming follows the invFFT §23.1 convention "<Category> - <Description>"
-# so the right-click preset menu sorts categories together.
+# v0.5 presets continue to work unchanged — LFO destinations default to 64
+# (= zero modulation), so the LFO runs but is inaudible.
 PRESETS = {
     # ── Sustained / additive (Damping = 0) ──────────────────────────────
     "Pad - Soft Organ": {
@@ -112,27 +125,80 @@ PRESETS = {
         "Partials": 20, "Brightness": 25, "Drift": 90, "Phase": 60,
         "Attack": 120, "Release": 127,
     },
+
+    # ── v0.6 — LFO showcase ────────────────────────────────────────────
+    "Lead - Vibrato Sax": {
+        # Sustained harmonic lead with a classic sine vibrato on pitch.
+        "Partials": 32, "Inharmonic": 5, "Brightness": 75, "Drift": 10,
+        "Phase": 30, "Attack": 5, "Decay": 30, "Sustain": 100, "Release": 30,
+        "Glide": 20,
+        "LFO Speed": 65,       # ~5 Hz
+        "Mod Pitch": 72,      # subtle positive vibrato
+    },
+    "Pad - Pulsing Glass": {
+        # Glass pad with a slow LFO sweep on brightness + inharm — a single
+        # held chord breathes between dark/harmonic and bright/inharmonic.
+        "Inharmonic": 50, "Brightness": 90, "Drift": 20, "Phase": 100,
+        "Attack": 60, "Release": 80,
+        "LFO Speed": 35,       # slow ~1 Hz
+        "Mod Bright": 88,
+        "Mod Inharm": 72,
+    },
+    "Pad - Ensemble Shimmer": {
+        # String Ensemble + LFO with max Sync. Each voice gets a fully random
+        # LFO phase at NoteOn → chord voices modulate independently → shimmer.
+        # The poly-LFO-with-random-offset trick from invFFT §21.2.
+        "Drift": 100, "Phase": 75,
+        "Attack": 70, "Release": 90,
+        "LFO Speed": 30,       # slow ~0.7 Hz
+        "LFO Sync": 127,       # MAX random per voice
+        "Mod Pitch": 68,      # tiny per-voice detune drift
+        "Mod Bright": 75,     # per-voice brightness shimmer
+    },
+    "FX - SH Glitch": {
+        # Sample & Hold LFO routing to pitch + inharm produces stepped random
+        # pitch jumps with inharmonic spectrum shifts — bleepy, glitchy texture.
+        "Partials": 40, "Inharmonic": 35, "Brightness": 75, "Damping": 20,
+        "Damp Tilt": 60, "Attack": 5, "Decay": 80, "Sustain": 50, "Release": 40,
+        "LFO Speed": 85,
+        "LFO Wave": 3,         # S&H
+        "LFO Sync": 70,        # some per-voice randomness
+        "Mod Pitch": 92,      # big random pitch jumps
+        "Mod Inharm": 80,     # spectrum shifts on each step
+    },
 }
 
 
 def resolved(overrides):
-    """Full ordered (name, index, value) list for one preset."""
     return [
         (name, idx, overrides.get(name, DEFAULTS[name]))
         for name, idx in sorted(PARAM_INDEX.items(), key=lambda kv: kv[1])
     ]
 
 
+def xml_escape(s):
+    """Escape XML special chars for safe use in attribute values.
+
+    Order matters — & must be replaced first, otherwise subsequent
+    replacements introduce more & chars and double-escape them.
+    """
+    return (str(s)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;"))
+
+
 def emit_preset(key, overrides):
     rows = resolved(overrides)
     lines = [
-        f'  <Item Key="{key}">',
-        f'    <Preset Machine="{MACHINE_NAME}">',
+        f'  <Item Key="{xml_escape(key)}">',
+        f'    <Preset Machine="{xml_escape(MACHINE_NAME)}">',
         '      <Parameters>',
     ]
     for name, idx, val in rows:
         lines.append(
-            f'        <Parameter Name="{name}" Group="1" '
+            f'        <Parameter Name="{xml_escape(name)}" Group="1" '
             f'Index="{idx}" Track="0" Value="{val}" />'
         )
     lines += [

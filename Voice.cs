@@ -9,48 +9,42 @@ namespace PedalAddR
     //     z <- z * (cos w + j sin w)        out += amp * real(z)
     // the cheapest stable way to run many sinusoids without a per-sample Pow/Sin.
     //
-    //   • Inharmonicity (B): ratios bend from pure harmonics (organ/pad) toward
-    //     stretched/bell ratios via f_n = f0 * n * sqrt(1 + B*n^2).
-    //   • Damping (d) + tilt: per-partial exponential ringdown. d=0 = sustain
-    //     (additive); d>0 = struck/plucked modes, highs decaying faster.
-    //   • Drift: each partial's frequency takes an independent slow random
-    //     wander — "ensemble from within". Per-voice RNG keeps chord voices
-    //     drifting independently (invFFT §21.2). Opt-in: zero cost at depth 0.
-    //   • Phase spread: at NoteOn each partial gets an independent random
-    //     starting phase (drawn from per-voice RNG), scaled by the knob.
-    //     0 = all in phase (sharp strike transient). Max = energy smeared,
-    //     smooth pad onset. Latches at NoteOn — phase mid-note is determined
-    //     by rotor history and can't be moved without a click.
+    //   • Inharmonicity (B): f_n = f0 * n * sqrt(1 + B*n^2).
+    //   • Damping (d) + tilt: per-partial exponential ringdown.
+    //   • Drift: per-partial slow random detune (mean-reverting OU walk),
+    //     per-voice RNG so chord voices drift independently (invFFT §21.2).
+    //   • Phase spread: at NoteOn each partial gets a random starting phase
+    //     scaled by the knob — sharp-strike ↔ smeared-onset.
+    //   • Click-protect: 1 ms fade before phasor reseed on retriggers.
     //
-    // Click-protect (v0.5). NoteOn re-seeds all phasors discontinuously; if
-    // the ADSR is still audibly above zero (very common with short Decay +
-    // low Sustain patches in fast patterns), that's a hard step in the
-    // waveform → audible click. A per-sample one-pole gain (`_trigGain`,
-    // 1 ms tau) fades the voice down to near-silence first, then the seed
-    // happens, then the gain ramps back to 1. Total retrigger gap ~5 ms;
-    // below-audible retriggers bypass the fade.
+    // LFO (v0.6). One per voice. Phase is per-voice so chord voices can
+    // modulate independently (the `Sync` param scales how randomised the
+    // start phase is at NoteOn — 0 = lockstep, max = fully random).
+    // Advances at control rate (1.5 kHz, well above any audible LFO speed).
+    // Routes to four destinations simultaneously with bipolar amounts
+    // (M1 §14 pattern): pitch, brightness, inharmonicity, drift depth.
+    // Negative amounts invert the modulation polarity.
     // ─────────────────────────────────────────────────────────────────────────
     internal sealed class Voice
     {
         public const int MaxPartials = 64;
-        const int CtrlBlock = 32;          // control-rate update cadence (samples)
+        const int CtrlBlock = 32;
 
         const float DriftStep   = 0.05f;
         const float DriftRevert = 0.008f;
 
-        const float TrigTauSec  = 0.001f;  // click-protect fade time-constant
-        const float TrigSeedThr = 0.005f;  // seed fires when _trigGain falls below this (~-46 dB)
+        const float TrigTauSec  = 0.001f;
+        const float TrigSeedThr = 0.005f;
 
         float _sr = 44100f;
 
-        // Per-partial state.
         readonly float[] _re    = new float[MaxPartials];
         readonly float[] _im    = new float[MaxPartials];
         readonly float[] _cos   = new float[MaxPartials];
         readonly float[] _sin   = new float[MaxPartials];
-        readonly float[] _amp   = new float[MaxPartials];   // cached: shape × env (per block)
-        readonly float[] _env   = new float[MaxPartials];   // decay envelope state (per partial)
-        readonly float[] _drift = new float[MaxPartials];   // OU drift state, ~[-1,1]
+        readonly float[] _amp   = new float[MaxPartials];
+        readonly float[] _env   = new float[MaxPartials];
+        readonly float[] _drift = new float[MaxPartials];
         int _active;
 
         readonly Random _rng;
@@ -59,7 +53,7 @@ namespace PedalAddR
         float _currentMidi = 60f;
         float _targetMidi  = 60f;
 
-        // Live params.
+        // Static params (per-block).
         int   _partials    = 48;
         float _b           = 0f;
         float _slope       = 1f;
@@ -69,7 +63,18 @@ namespace PedalAddR
         float _phaseSpread = 0f;
         float _glideCoef   = 1f;
 
-        // Click-protect (v0.5).
+        // LFO state + config.
+        float _lfoPhase    = 0f;       // [0, 1)
+        float _shVal       = 0f;       // S&H current sample
+        float _lfoSpeedHz  = 0.5f;
+        int   _lfoWave     = 0;        // 0=Sin 1=Tri 2=Sqr 3=S&H
+        float _lfoSync     = 0f;       // 0..1, NoteOn phase randomness
+        float _lfoPitchAmt = 0f;       // signed semitones at LFO=±1
+        float _lfoBrightAmt = 0f;      // signed slope delta
+        float _lfoInharmAmt = 0f;      // signed B delta
+        float _lfoDriftAmt  = 0f;      // signed drift-depth delta
+
+        // Click-protect.
         float _trigGain       = 1f;
         float _trigGainTarget = 1f;
         float _trigCoef       = 1f;
@@ -85,9 +90,6 @@ namespace PedalAddR
 
         public Voice(int seed) { _rng = new Random(seed); }
 
-        // A pending retrigger keeps the voice "active" so the fade-out
-        // actually gets rendered (otherwise the idle fast-path would skip
-        // it before the deferred seed can fire).
         public bool IsActive => _ampEnv.IsActive || _retrigPending;
 
         public void SetSampleRate(float sr)
@@ -99,7 +101,10 @@ namespace PedalAddR
         public void SetParams(int partials, float b, float slope,
                               float dGlobal, float dampTilt, float driftDepth,
                               float phaseSpread, float glideCoef,
-                              float aSec, float dSec, float sustain, float rSec)
+                              float aSec, float dSec, float sustain, float rSec,
+                              float lfoSpeedHz, int lfoWave, float lfoSync,
+                              float lfoPitchAmt, float lfoBrightAmt,
+                              float lfoInharmAmt, float lfoDriftAmt)
         {
             _partials    = Math.Clamp(partials, 1, MaxPartials);
             _b           = b;
@@ -109,20 +114,25 @@ namespace PedalAddR
             _driftDepth  = driftDepth;
             _phaseSpread = phaseSpread;
             _glideCoef   = glideCoef;
+            _lfoSpeedHz  = lfoSpeedHz;
+            _lfoWave     = lfoWave;
+            _lfoSync     = lfoSync;
+            _lfoPitchAmt  = lfoPitchAmt;
+            _lfoBrightAmt = lfoBrightAmt;
+            _lfoInharmAmt = lfoInharmAmt;
+            _lfoDriftAmt  = lfoDriftAmt;
             _ampEnv.SetParams(aSec, dSec, sustain, rSec, _sr);
         }
 
         public void NoteOn(int midi, bool wasIdle)
         {
-            // Fresh-from-idle (or already inaudible) → no click to mask, fire
-            // immediately. Otherwise defer the seed until _trigGain has faded
-            // below threshold; the actual seed happens inside Render().
             if (wasIdle || _ampEnv.IsBelowAudible)
             {
                 _trigGain       = 1f;
                 _trigGainTarget = 1f;
                 _retrigPending  = false;
                 SeedBank(midi, snapPitch: wasIdle);
+                SeedLfo();
                 _ampEnv.NoteOn();
             }
             else
@@ -130,8 +140,6 @@ namespace PedalAddR
                 _retrigPending  = true;
                 _pendingMidi    = midi;
                 _trigGainTarget = 0f;
-                // SeedBank deferred to Render — _trigGain ramps current waveform
-                // toward silence first, masking the upcoming phasor discontinuity.
             }
         }
 
@@ -139,10 +147,6 @@ namespace PedalAddR
         {
             if (_retrigPending)
             {
-                // A retrigger was queued but the user has lifted the key
-                // before it fired. Cancel the pending seed and let the
-                // current voice release normally; ramp _trigGain back so
-                // the release tail is audible.
                 _retrigPending  = false;
                 _trigGainTarget = 1f;
             }
@@ -151,19 +155,15 @@ namespace PedalAddR
 
         public void ForceFade(float sr)
         {
-            // Transport-stop fast-fade (Core §27). Cancel any pending retrigger
-            // so we don't restart the voice mid-fade.
             _retrigPending  = false;
             _trigGainTarget = 1f;
             _ampEnv.ForcedRelease(sr);
         }
 
-        // Seed the partial bank from rest — used by both the fresh-trigger
-        // path and the deferred retrigger path.
         void SeedBank(int midi, bool snapPitch)
         {
             _targetMidi = midi;
-            if (snapPitch) _currentMidi = midi;     // first-note-from-rest snap (SH101 §6.1)
+            if (snapPitch) _currentMidi = midi;
 
             if (_phaseSpread > 0f)
             {
@@ -181,13 +181,39 @@ namespace PedalAddR
                 for (int p = 0; p < MaxPartials; p++)
                 {
                     _env[p] = 1f;
-                    _re[p]  = 1f; _im[p] = 0f;          // all in phase — the "strike"
+                    _re[p]  = 1f; _im[p] = 0f;
                 }
             }
             Array.Clear(_drift, 0, MaxPartials);
 
             _active = _partials;
-            _ctrl   = 0;                                // force ControlUpdate on next sample
+            _ctrl   = 0;
+        }
+
+        void SeedLfo()
+        {
+            // Key-synced with random offset. Sync=0 → phase 0 (lockstep across
+            // voices). Sync=1 → fully random per voice (chord shimmer).
+            _lfoPhase = (float)_rng.NextDouble() * _lfoSync;
+            _shVal    = (float)(_rng.NextDouble() * 2.0 - 1.0);
+        }
+
+        float LfoValue()
+        {
+            switch (_lfoWave)
+            {
+                case 0: return MathF.Sin(_lfoPhase * DspMath.TwoPi);
+                case 1:                                                  // triangle (0→+1→0→-1→0)
+                {
+                    float p = _lfoPhase;
+                    return p < 0.25f ? 4f * p
+                         : p < 0.75f ? 2f - 4f * p
+                                     : 4f * p - 4f;
+                }
+                case 2: return _lfoPhase < 0.5f ? 1f : -1f;              // square
+                case 3: return _shVal;                                   // S&H
+                default: return 0f;
+            }
         }
 
         void ControlUpdate()
@@ -195,27 +221,44 @@ namespace PedalAddR
             _currentMidi += (_targetMidi - _currentMidi) * _glideCoef;
             if (MathF.Abs(_targetMidi - _currentMidi) < 0.001f) _currentMidi = _targetMidi;
 
-            float f0     = 440f * DspMath.FastPow2((_currentMidi - 69f) / 12f);
+            // ── LFO advance ────────────────────────────────────────────────
+            float prevPhase = _lfoPhase;
+            _lfoPhase += _lfoSpeedHz * (CtrlBlock / _sr);
+            if (_lfoPhase >= 1f) _lfoPhase -= 1f;
+            // Sample a new S&H value on phase wrap (cheap; only matters for wave 3).
+            if (_lfoPhase < prevPhase)
+                _shVal = (float)(_rng.NextDouble() * 2.0 - 1.0);
+            float lfo = LfoValue();
+
+            // ── Apply LFO to working copies (don't mutate static field values) ─
+            float effMidi       = _currentMidi + lfo * _lfoPitchAmt;
+            float effSlope      = _slope       + lfo * _lfoBrightAmt;
+            float effB          = MathF.Max(0f, _b          + lfo * _lfoInharmAmt);
+            float effDriftDepth = MathF.Max(0f, _driftDepth + lfo * _lfoDriftAmt);
+            bool  driftOn       = effDriftDepth > 0f
+                                  || _driftDepth > 0f
+                                  || MathF.Abs(_lfoDriftAmt) > 1e-6f;
+
+            float f0     = 440f * DspMath.FastPow2((effMidi - 69f) / 12f);
             float nyq    = _sr * 0.5f;
             float wScale = DspMath.TwoPi / _sr;
-            bool  drift  = _driftDepth > 0f;
-            bool  damp   = _dGlobal    > 0f;
+            bool  damp   = _dGlobal > 0f;
 
             int   active  = _partials;
             float sumBase = 0f;
             for (int p = 0; p < _partials; p++)
             {
                 int   nn    = p + 1;
-                float ratio = nn * MathF.Sqrt(1f + _b * nn * nn);
+                float ratio = nn * MathF.Sqrt(1f + effB * nn * nn);
                 float freq  = f0 * ratio;
 
-                if (drift)
+                if (driftOn)
                 {
                     float w  = (float)(_rng.NextDouble() * 2.0 - 1.0);
                     float dr = _drift[p] + w * DriftStep - _drift[p] * DriftRevert;
                     if (dr > 2f) dr = 2f; else if (dr < -2f) dr = -2f;
                     _drift[p] = dr;
-                    freq *= 1f + dr * _driftDepth;
+                    freq *= 1f + dr * effDriftDepth;
                 }
 
                 if (freq >= nyq) { active = p; break; }
@@ -234,7 +277,7 @@ namespace PedalAddR
                 float k    = 1.5f - 0.5f * mag2;
                 _re[p] *= k; _im[p] *= k;
 
-                float ba = 1f / MathF.Pow(nn, _slope);
+                float ba = 1f / MathF.Pow(nn, effSlope);
                 _amp[p]  = ba * _env[p];
                 sumBase += ba;
             }
@@ -251,22 +294,18 @@ namespace PedalAddR
                 }
             }
             if (totalAmp < 1e-5f && !_retrigPending) _ampEnv.ForceIdle();
-            // ^^ guard against freeing a voice while a retrigger is queued —
-            // we want the deferred seed to bring it back, not be stranded.
         }
 
         public void Render(float[] outBuf, int n)
         {
             for (int i = 0; i < n; i++)
             {
-                // Advance click-protect gain (per-sample one-pole).
                 _trigGain += (_trigGainTarget - _trigGain) * _trigCoef;
 
-                // Deferred retrigger: once _trigGain has faded below threshold,
-                // fire the seed + ADSR.NoteOn and ramp the gain back up.
                 if (_retrigPending && _trigGain < TrigSeedThr)
                 {
                     SeedBank(_pendingMidi, snapPitch: false);
+                    SeedLfo();
                     _ampEnv.NoteOn();
                     _retrigPending  = false;
                     _trigGainTarget = 1f;
@@ -299,7 +338,7 @@ namespace PedalAddR
             bool  _forced;
 
             public bool IsActive       => _st != St.Idle;
-            public bool IsBelowAudible => _level < 0.005f;     // ~-46 dB
+            public bool IsBelowAudible => _level < 0.005f;
 
             public void SetParams(float aSec, float dSec, float sustain, float rSec, float sr)
             {
@@ -309,9 +348,6 @@ namespace PedalAddR
                 _sustain = sustain;
             }
 
-            // Reset level so a retrigger ramps from 0 — the click-protect fade
-            // has already brought the audible output to near-silence by the
-            // time this fires.
             public void NoteOn()    { _forced = false; _level = 0f; _st = St.Attack; }
             public void NoteOff()   { if (_st != St.Idle) _st = St.Release; }
             public void ForceIdle() { _st = St.Idle; _level = 0f; }
