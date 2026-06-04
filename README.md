@@ -52,6 +52,13 @@ z ← z · (cos ω + j·sin ω)        out += amp · real(z)
   back over the dry signal. The filter is global (one instance shared across
   voices), so the formant frequency stays fixed regardless of pitch — the
   vocal-tract behaviour, not a tracking filter.
+- **Velocity** is a per-track parameter (Group 2, alongside Note) that
+  latches between explicit changes — empty pattern rows preserve the last
+  value, matching tracker convention. The global `Vel Sens` then scales
+  how much velocity actually affects the voice amplitude: at 0 velocity
+  is ignored (uniform loudness — what pads usually want); at 127 it
+  scales the voice gain directly. Lerp between the two for moderate
+  expressivity.
 
 Amplitude is split into a **shape** (`1/nˢ`, recomputed live at control rate so
 Brightness can move mid-note, normalised so loudness stays constant as the
@@ -95,7 +102,9 @@ over ~5 ms (Core §27).
 | Formant Cutoff | 0–127 | Log-mapped ~100 Hz to ~8 kHz                              |
 | Formant Q    | 0–127  | Log-mapped 0.5 (wide) to 30 (razor-sharp)                   |
 | Formant Amount | 0–127 | Peak prominence over flat; 0 = off, full = ~14 dB boost   |
+| Vel Sens     | 0–127  | How much velocity affects amplitude. 0 = uniform, 127 = full|
 | Note         | track  | z=C-4, s=C#-4 …                                             |
+| Velocity     | track  | Per-note velocity, latches between explicit changes         |
 
 Starting points: organ/pad = Damping 0, Brightness mid, a little Drift, Phase
 mid-high (smooth onset); lush string ensemble = Damping 0 + Drift high + Phase
@@ -107,17 +116,23 @@ LFO phase, so the modulation moves through the chord rather than across it.
 
 ## Presets
 
-Ships with `Pedal Add-R_Presets.prs.xml` — 19 patches showing the range:
+Ships with `Pedal Add-R.prs.xml` — 29 patches showing the range:
 
-- **Pad** — Soft Organ, Glass, String Ensemble, Choir Aaah (sustained side)
-- **Bell / Mallet / Pluck** — Crystal, Tubular, Marimba, Harp, Pizzicato (struck side)
-- **Bass** — Sub (low-partial harmonic)
-- **FX** — Wobbling Glass, Slow Drone (drift extremes), SH Glitch (LFO)
-- **Lead** — Vibrato Sax (LFO sine on pitch)
-- **LFO-driven pads** — Pulsing Glass (slow brightness/inharm sweep),
-  Ensemble Shimmer (max LFO Sync — per-voice phase, chord-shimmer)
-- **Formant** — Vowel Ahh (F1 ~730 Hz), Vowel Ee (F2 ~2290 Hz),
-  Pluck Vox (percussive "oh"-ish formant)
+- **Pad** — Soft Organ, Glass, String Ensemble, Choir Aaah (sustained side);
+  Pulsing Glass, Ensemble Shimmer (LFO-driven); Cathedral (vast slow pad)
+- **Bell / Mallet / Pluck** — Crystal, Tubular, Marimba, Harp, Pizzicato
+  (struck side); Kalimba, Vibraphone, Steel Drum (v0.8 mallet expansion);
+  Vox (formant-coloured pluck)
+- **Bass** — Sub, Reese (drift wobble), Slap (formant pluck), Sine Sub (clean)
+- **Lead** — Vibrato Sax (LFO pitch); Acid Squelch (LFO wah), Whistle (airy)
+- **FX** — Wobbling Glass, Slow Drone, SH Glitch, Wobble (LFO triangle on
+  brightness)
+- **Formant pads** — Vowel Ahh (F1 ~730 Hz), Vowel Ee (F2 ~2290 Hz)
+
+Each preset has its own Vel Sens value tuned to the patch character:
+pads run low (~30 — uniform, ethereal), plucks and leads run high (~100–110
+— expressive), bass between (40–110 depending on style). The default Vel
+Sens for any new instance is 80 (moderate response).
 
 Right-click the machine to load. Per Build §3.3's append-only rule, the
 preset indices stay stable across future versions; adding formant /
@@ -130,7 +145,7 @@ Build §3.4) — edit that and re-run rather than hand-editing the XML.
 ## Build & deploy
 
 `dotnet build` produces `Pedal Add-R.NET.dll` and the post-build target
-copies both the DLL and `Pedal Add-R_Presets.prs.xml` to
+copies both the DLL and `Pedal Add-R.prs.xml` to
 `C:\Program Files\ReBuzz\Gear\Generators\` (Build §1.3 / §3.5 — the
 preset bundle uses the ItemGroup pattern because the filename has a
 space). If ReBuzz is installed elsewhere, change the path in the two
@@ -144,7 +159,8 @@ with chord recovery, transport-stop fade, mixer headroom, per-voice Drift,
 Phase spread, live Brightness, starter preset bank, click-protect retrigger
 (v0.5), per-voice key-synced LFO with 4 destinations (v0.6), Formant peak
 filter on the mix (v0.7), About banner in the parameter window with version
-display (v0.7.1).
+display (v0.7.1), per-track velocity + Vel Sens scaling + bank expanded to
+29 patches (v0.8).
 
 Retrigger semantics: a *fresh* trigger (voice was idle) seeds the bank
 immediately and lets the ADSR Attack ramp up from level 0 — output starts
@@ -160,17 +176,16 @@ latency floor for percussive material.
 
 **Path to 1.0:**
 
-- **v0.8 — Velocity + final preset expansion.** Track `Volume` parameter as
-  velocity (M1 §14 pattern) routing to amp + attack. Bank grows to ~24–32
-  patches showing the full surface, now including the formant.
-- **v1.0 — Polish.** Final profile pass on the stress patch, doc tidy, ship.
+- **v1.0 — Polish.** Final profile pass on the stress patch with everything
+  turned up (LFO active + formant + 8 voices + 64 partials), doc tidy, ship.
 
-Held for v1.x: **Excitation blend** (strike ↔ drive) — pushes the engine
-from "additive synth" toward "complex distortion synth"; that's a separate
-identity and worth its own release. **LFO → Formant** routing would be
-neat (auto-wah, talkbox-ish movement) but needs new machinery for
-global-LFO modulation since the formant is machine-level while the
-existing LFO is per-voice.
+Held for v1.x: **Vel→Bright / Vel→Attack** (more expressivity routing) —
+deliberate omission from v0.8 to keep the surface tight; easy add later.
+**Excitation blend** (strike ↔ drive) — pushes the engine from additive
+toward complex-distortion; that's a separate identity and worth its own
+release. **LFO → Formant** routing — needs new machinery for global-LFO
+modulation since the formant is machine-level while the existing LFO is
+per-voice.
 
 ## Files
 
@@ -179,4 +194,4 @@ existing LFO is per-voice.
 click-protect + LFO + ADSR), `PedalAddRGui.cs` (About banner — embedded
 parameter-window GUI via IMachineGUIFactory per Core §26), `DspMath.cs`
 (FastPow2, note conversion, soft clip), `gen_presets.py` (source-only),
-`Pedal Add-R_Presets.prs.xml` (deployed bundle), the `.csproj`.
+`Pedal Add-R.prs.xml` (deployed bundle), the `.csproj`.

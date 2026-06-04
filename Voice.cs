@@ -81,6 +81,13 @@ namespace PedalAddR
         bool  _retrigPending;
         int   _pendingMidi;
 
+        // Velocity (v0.8). Scales output amp directly; multiplied into the
+        // per-sample chain alongside ADSR and _trigGain. Set fresh on every
+        // NoteOn; _pendingVelocity carries the new value across the
+        // click-protect fade so the seed and the velocity land together.
+        float _velocity        = 1f;
+        float _pendingVelocity = 1f;
+
         int _ctrl;
         readonly AdsrEnvelope _ampEnv = new AdsrEnvelope();
 
@@ -124,10 +131,11 @@ namespace PedalAddR
             _ampEnv.SetParams(aSec, dSec, sustain, rSec, _sr);
         }
 
-        public void NoteOn(int midi, bool wasIdle)
+        public void NoteOn(int midi, bool wasIdle, float velocity)
         {
             if (wasIdle || _ampEnv.IsBelowAudible)
             {
+                _velocity       = velocity;
                 _trigGain       = 1f;
                 _trigGainTarget = 1f;
                 _retrigPending  = false;
@@ -137,6 +145,7 @@ namespace PedalAddR
             }
             else
             {
+                _pendingVelocity = velocity;
                 _retrigPending  = true;
                 _pendingMidi    = midi;
                 _trigGainTarget = 0f;
@@ -304,6 +313,7 @@ namespace PedalAddR
 
                 if (_retrigPending && _trigGain < TrigSeedThr)
                 {
+                    _velocity = _pendingVelocity;
                     SeedBank(_pendingMidi, snapPitch: false);
                     SeedLfo();
                     _ampEnv.NoteOn();
@@ -323,7 +333,7 @@ namespace PedalAddR
                     _re[p] = nr; _im[p] = ni;
                     s += _amp[p] * nr;
                 }
-                outBuf[i] = s * _ampEnv.Process() * _trigGain;
+                outBuf[i] = s * _ampEnv.Process() * _trigGain * _velocity;
             }
         }
 

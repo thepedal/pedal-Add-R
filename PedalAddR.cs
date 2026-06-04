@@ -17,12 +17,16 @@ namespace PedalAddR
     public class PedalAddRMachine : IBuzzMachine
     {
         // ── Machine metadata (read by the About banner in PedalAddRGui.cs) ─
-        public const string Version = "0.7.1";
+        public const string Version = "0.8";
 
         public const int MAX_VOICES = 8;
 
         const float MinTimeSec  = 0.001f;
-        const float MixHeadroom = 0.4f;
+        const float MixHeadroom = 0.7f;         // post-mix scaling. 0.4 (the M1 §10 chord-safety
+                                                // figure carried from v0.2) was over-conservative
+                                                // — chord summing is already protected by the soft
+                                                // clip below. 0.7 puts single-voice peak at V=127
+                                                // ≈ -3 dB, V=100 ≈ -5 dB. Bumped in v0.8.
 
         // LFO destination scaling — chosen so max amount + LFO extremes give
         // a musically dramatic but not unstable swing.
@@ -42,6 +46,12 @@ namespace PedalAddR
         // pre-Volume-scale, pre-soft-clip). TPT topology — Cytomic / Simper.
         float _svfZ1, _svfZ2;
 
+        // Per-track latched velocity (v0.8). Updated by SetVelocity, read at
+        // NoteOn time. IsStateless on SetVelocity means empty pattern rows
+        // don't fire the setter, so the latched value persists between
+        // explicit changes — the classic tracker Volume-column behaviour.
+        readonly int[] _trackVelocity = new int[MAX_VOICES];
+
         IParameter    _ownNoteParam;
         Func<int,int> _ownNotePValues;
 
@@ -50,6 +60,7 @@ namespace PedalAddR
             _host = host;
             for (int i = 0; i < MAX_VOICES; i++)
                 _voices[i] = new Voice(unchecked((int)((i + 1) * 0x9E3779B1L)));
+            Array.Fill(_trackVelocity, 127);    // default latched velocity = full
         }
 
         // ── Globals ─────────────────────────────────────────────────────────
@@ -144,7 +155,13 @@ namespace PedalAddR
             Description = "Formant peak prominence over flat. 0 = off (pass-through), full = ~14 dB boost")]
         public int FormantAmount { get; set; } = 0;
 
-        // ── Note (track parameter) ──────────────────────────────────────────
+        // ── New in v0.8 — Velocity sensitivity appended at end of globals ──
+
+        [ParameterDecl(Name = "Vel Sens", MinValue = 0, MaxValue = 127, DefValue = 80,
+            Description = "How much velocity affects amplitude. 0 = uniform loudness (velocity ignored), 127 = full velocity scaling")]
+        public int VelSens { get; set; } = 80;
+
+        // ── Track parameters ────────────────────────────────────────────────
         [ParameterDecl(Name = "Note", IsStateless = true,
             Description = "z=C-4, s=C#-4 …")]
         public void SetNote(Note value, int track)
@@ -173,6 +190,20 @@ namespace PedalAddR
             if (b == 0) return;
             if (b == 255) { v.HasNoteOff = true; v.HasNoteOn = false; }
             else          { v.HasNoteOn = true; v.HasNoteOff = false; v.PendingBuzzNote = b; }
+        }
+
+        // Velocity track parameter (v0.8). IsStateless = true → empty pattern
+        // rows don't fire this setter, so _trackVelocity[t] persists between
+        // explicit changes. Multi-track velocity at the same row is subject
+        // to the Core §42 pvalues collapse (only the last setter call fires);
+        // not recovered here in v0.8 — same-row multi-velocity is uncommon
+        // and the workaround (set on the row before the chord) is fine.
+        [ParameterDecl(Name = "Velocity", MinValue = 0, MaxValue = 127, DefValue = 127, IsStateless = true,
+            Description = "Per-note velocity. Latches per track until next change. Scale via Vel Sens.")]
+        public void SetVelocity(int value, int track)
+        {
+            if ((uint)track >= MAX_VOICES) return;
+            _trackVelocity[track] = value;
         }
 
         void TryInitPValues()
@@ -259,14 +290,22 @@ namespace PedalAddR
                 for (int t = 0; t < MAX_VOICES; t++) _voices[t].ForceFade(sr);
             _wasPlaying = nowPlaying;
 
-            // Drain note events.
+            // Drain note events. Velocity applied here:
+            //   rawVelN = latched per-track velocity (0..1)
+            //   velSensN = global Vel Sens knob (0..1)
+            //   effVel = 1 - velSensN * (1 - rawVelN)
+            // → velSensN=0 yields effVel=1 (uniform loudness)
+            // → velSensN=1 yields effVel=rawVelN (direct scaling)
+            float velSensN = VelSens / 127f;
             for (int t = 0; t < MAX_VOICES; t++)
             {
                 var v = _voices[t];
                 if (v.HasNoteOn)
                 {
                     v.HasNoteOn = false; v.HasNoteOff = false;
-                    v.NoteOn(DspMath.BuzzNoteToMidi(v.PendingBuzzNote), !v.IsActive);
+                    float rawVelN = _trackVelocity[t] / 127f;
+                    float effVel  = 1f - velSensN * (1f - rawVelN);
+                    v.NoteOn(DspMath.BuzzNoteToMidi(v.PendingBuzzNote), !v.IsActive, effVel);
                 }
                 else if (v.HasNoteOff)
                 {
