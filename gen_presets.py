@@ -42,6 +42,10 @@ PARAM_INDEX = {
     "Mod Bright": 17,
     "Mod Inharm": 18,
     "Mod Drift":  19,
+    # ── v0.7 (Formant) ────────────────────────
+    "Formant Cutoff": 20,
+    "Formant Q":      21,
+    "Formant Amount": 22,
 }
 
 # Machine DefValues — mirror PedalAddR.cs.
@@ -66,6 +70,9 @@ DEFAULTS = {
     "Mod Bright":  64,
     "Mod Inharm":  64,
     "Mod Drift":   64,
+    "Formant Cutoff": 64, # ~900 Hz, vowel-friendly mid
+    "Formant Q":      30, # ~3.0, moderate sharpness
+    "Formant Amount":  0, # 0 = off (formant inaudible)
 }
 
 # Sparse per-preset overrides. Missing keys take DEFAULTS.
@@ -165,6 +172,34 @@ PRESETS = {
         "LFO Sync": 70,        # some per-voice randomness
         "Mod Pitch": 92,      # big random pitch jumps
         "Mod Inharm": 80,     # spectrum shifts on each step
+    },
+
+    # ── v0.7 — Formant showcase ─────────────────────────────────────────
+    "Pad - Vowel Ahh": {
+        # Choir base + formant tuned to the "ah" F1 (~730 Hz) for a vocal
+        # coloration on top of the drifty ensemble.
+        "Brightness": 55, "Drift": 110, "Phase": 90,
+        "Attack": 80, "Release": 100,
+        "Formant Cutoff": 57,    # ~730 Hz
+        "Formant Q":      50,    # ~5.5 — moderate sharpness
+        "Formant Amount": 80,    # ~2.5x peak — prominent vowel
+    },
+    "Pad - Vowel Ee": {
+        # Same base but formant on the "ee" F2 (~2290 Hz) for the bright
+        # vocal character that "ee" has.
+        "Brightness": 65, "Drift": 110, "Phase": 90,
+        "Attack": 80, "Release": 100,
+        "Formant Cutoff": 80,    # ~2290 Hz
+        "Formant Q":      70,    # ~9 — sharper, more defined
+        "Formant Amount": 90,    # ~2.8x — very prominent
+    },
+    "Pluck - Vox": {
+        # Plucked harp + "oh"-ish formant ≈ a percussive vocal "doh".
+        "Brightness": 75, "Damping": 50, "Damp Tilt": 90,
+        "Attack": 1, "Decay": 60, "Sustain": 0, "Release": 25,
+        "Formant Cutoff": 50,    # ~570 Hz ("oh"-ish)
+        "Formant Q":      40,    # ~3.3 — moderate
+        "Formant Amount": 70,    # ~2.2x
     },
 }
 

@@ -16,6 +16,9 @@ namespace PedalAddR
         OutputCount = 1)]
     public class PedalAddRMachine : IBuzzMachine
     {
+        // ── Machine metadata (read by the About banner in PedalAddRGui.cs) ─
+        public const string Version = "0.7.1";
+
         public const int MAX_VOICES = 8;
 
         const float MinTimeSec  = 0.001f;
@@ -34,6 +37,10 @@ namespace PedalAddR
         float[] _mix      = new float[256];
         float _lastSr;
         bool  _wasPlaying;
+
+        // Formant SVF state (machine-global; applied to the mix post-accumulation,
+        // pre-Volume-scale, pre-soft-clip). TPT topology — Cytomic / Simper.
+        float _svfZ1, _svfZ2;
 
         IParameter    _ownNoteParam;
         Func<int,int> _ownNotePValues;
@@ -122,6 +129,20 @@ namespace PedalAddR
         [ParameterDecl(Name = "Mod Drift", MinValue = 0, MaxValue = 127, DefValue = 64,
             Description = "LFO modulation depth for drift depth. 64 = off")]
         public int LfoToDrift { get; set; } = 64;
+
+        // ── New in v0.7 — Formant appended at end so v0.6 preset indices stay valid ──
+
+        [ParameterDecl(Name = "Formant Cutoff", MinValue = 0, MaxValue = 127, DefValue = 64,
+            Description = "Formant center frequency, log-mapped ~100 Hz to ~8 kHz")]
+        public int FormantCutoff { get; set; } = 64;
+
+        [ParameterDecl(Name = "Formant Q", MinValue = 0, MaxValue = 127, DefValue = 30,
+            Description = "Formant resonance / sharpness, 0.5 (wide) to 30 (razor-sharp)")]
+        public int FormantQ { get; set; } = 30;
+
+        [ParameterDecl(Name = "Formant Amount", MinValue = 0, MaxValue = 127, DefValue = 0,
+            Description = "Formant peak prominence over flat. 0 = off (pass-through), full = ~14 dB boost")]
+        public int FormantAmount { get; set; } = 0;
 
         // ── Note (track parameter) ──────────────────────────────────────────
         [ParameterDecl(Name = "Note", IsStateless = true,
@@ -259,6 +280,11 @@ namespace PedalAddR
             for (int t = 0; t < MAX_VOICES; t++) if (_voices[t].IsActive) { any = true; break; }
             if (!any)
             {
+                // No active voice → mix is silent → SVF state would just freeze
+                // at its last value. Reset to 0 so the next play resumes from a
+                // clean filter.
+                _svfZ1 = 0f;
+                _svfZ2 = 0f;
                 for (int i = 0; i < n; i++) output[i] = new Sample(0f, 0f);
                 return false;
             }
@@ -273,10 +299,36 @@ namespace PedalAddR
                 for (int i = 0; i < n; i++) _mix[i] += _voiceBuf[i];
             }
 
+            // ── Formant SVF coefficients (TPT topology, Cytomic / Andrew Simper) ──
+            // Computed per-buffer; the filter itself runs per-sample inside the
+            // output loop. Cutoff is well below Nyquist by mapping construction.
+            float fcHz = 100f * MathF.Pow(80f, FormantCutoff / 127f);
+            float q    = 0.5f * MathF.Pow(60f, FormantQ      / 127f);
+            float amt  = (FormantAmount / 127f) * 4f;
+            float g    = MathF.Tan(MathF.PI * fcHz / sr);
+            float k    = 1f / q;
+            float a1   = 1f / (1f + g * (g + k));
+            float a2   = g * a1;
+            float a3   = g * a2;
+
             float scale = (Volume / 127f) * MixHeadroom;
             for (int i = 0; i < n; i++)
             {
-                float s = DspMath.SoftClip(_mix[i] * scale) * 32768f;
+                float dry = _mix[i];
+
+                // Trapezoidal-prewarped state-variable filter. Two integrators,
+                // unconditionally stable for any g, k > 0. We take the BP output
+                // (= v1) and normalise by k = 1/Q so peak amplitude at resonance
+                // is unit regardless of Q — Amount alone controls prominence.
+                float v3 = dry - _svfZ2;
+                float v1 = a1 * _svfZ1 + a2 * v3;
+                float v2 = _svfZ2 + a2 * _svfZ1 + a3 * v3;
+                _svfZ1 = 2f * v1 - _svfZ1;
+                _svfZ2 = 2f * v2 - _svfZ2;
+
+                float wet = dry + amt * v1 * k;
+
+                float s = DspMath.SoftClip(wet * scale) * 32768f;
                 output[i] = new Sample(s, s);
             }
             return true;

@@ -44,6 +44,14 @@ z ← z · (cos ω + j·sin ω)        out += amp · real(z)
   Four wave shapes (Sine, Triangle, Square, Sample & Hold) and four bipolar
   destinations (pitch, brightness, inharmonicity, drift depth) routable
   simultaneously following the M1 §14 routing pattern.
+- **Formant** is one resonant peak applied to the mix (post partial
+  accumulation, pre Volume / soft-clip), at audio rate. A trapezoidal-
+  prewarped state-variable filter — unconditionally stable up to Nyquist —
+  gives the band-pass output, normalised so peak amplitude at resonance is
+  unit regardless of Q. `Amount` then sets how much of that peak is mixed
+  back over the dry signal. The filter is global (one instance shared across
+  voices), so the formant frequency stays fixed regardless of pitch — the
+  vocal-tract behaviour, not a tracking filter.
 
 Amplitude is split into a **shape** (`1/nˢ`, recomputed live at control rate so
 Brightness can move mid-note, normalised so loudness stays constant as the
@@ -84,6 +92,9 @@ over ~5 ms (Core §27).
 | Mod Bright   | 0–127  | Bipolar LFO→slope modulation, 64 = off                      |
 | Mod Inharm   | 0–127  | Bipolar LFO→inharmonicity modulation, 64 = off              |
 | Mod Drift    | 0–127  | Bipolar LFO→drift-depth modulation, 64 = off                |
+| Formant Cutoff | 0–127 | Log-mapped ~100 Hz to ~8 kHz                              |
+| Formant Q    | 0–127  | Log-mapped 0.5 (wide) to 30 (razor-sharp)                   |
+| Formant Amount | 0–127 | Peak prominence over flat; 0 = off, full = ~14 dB boost   |
 | Note         | track  | z=C-4, s=C#-4 …                                             |
 
 Starting points: organ/pad = Damping 0, Brightness mid, a little Drift, Phase
@@ -96,7 +107,7 @@ LFO phase, so the modulation moves through the chord rather than across it.
 
 ## Presets
 
-Ships with `Pedal Add-R_Presets.prs.xml` — 16 patches showing the range:
+Ships with `Pedal Add-R_Presets.prs.xml` — 19 patches showing the range:
 
 - **Pad** — Soft Organ, Glass, String Ensemble, Choir Aaah (sustained side)
 - **Bell / Mallet / Pluck** — Crystal, Tubular, Marimba, Harp, Pizzicato (struck side)
@@ -105,6 +116,8 @@ Ships with `Pedal Add-R_Presets.prs.xml` — 16 patches showing the range:
 - **Lead** — Vibrato Sax (LFO sine on pitch)
 - **LFO-driven pads** — Pulsing Glass (slow brightness/inharm sweep),
   Ensemble Shimmer (max LFO Sync — per-voice phase, chord-shimmer)
+- **Formant** — Vowel Ahh (F1 ~730 Hz), Vowel Ee (F2 ~2290 Hz),
+  Pluck Vox (percussive "oh"-ish formant)
 
 Right-click the machine to load. Per Build §3.3's append-only rule, the
 preset indices stay stable across future versions; adding formant /
@@ -129,7 +142,9 @@ space). If ReBuzz is installed elsewhere, change the path in the two
 **Done:** the partial-bank engine, the additive↔modal morph, 8-voice polyphony
 with chord recovery, transport-stop fade, mixer headroom, per-voice Drift,
 Phase spread, live Brightness, starter preset bank, click-protect retrigger
-(v0.5), per-voice key-synced LFO with 4 destinations (v0.6).
+(v0.5), per-voice key-synced LFO with 4 destinations (v0.6), Formant peak
+filter on the mix (v0.7), About banner in the parameter window with version
+display (v0.7.1).
 
 Retrigger semantics: a *fresh* trigger (voice was idle) seeds the bank
 immediately and lets the ADSR Attack ramp up from level 0 — output starts
@@ -145,22 +160,23 @@ latency floor for percussive material.
 
 **Path to 1.0:**
 
-- **v0.7 — Formant.** One movable resonant peak (Cutoff / Q / Amount) layered
-  over the additive bank. Adds vocal / vowel character to Choir Aaah, String
-  Ensemble, the pad family generally. The one missing color.
 - **v0.8 — Velocity + final preset expansion.** Track `Volume` parameter as
   velocity (M1 §14 pattern) routing to amp + attack. Bank grows to ~24–32
-  patches showing the full surface.
+  patches showing the full surface, now including the formant.
 - **v1.0 — Polish.** Final profile pass on the stress patch, doc tidy, ship.
 
 Held for v1.x: **Excitation blend** (strike ↔ drive) — pushes the engine
 from "additive synth" toward "complex distortion synth"; that's a separate
-identity and worth its own release.
+identity and worth its own release. **LFO → Formant** routing would be
+neat (auto-wah, talkbox-ish movement) but needs new machinery for
+global-LFO modulation since the formant is machine-level while the
+existing LFO is per-voice.
 
 ## Files
 
-`PedalAddR.cs` (machine + params + §42 note recovery + Work), `Voice.cs`
-(partial-bank engine + drift + phase + live brightness + click-protect +
-LFO + ADSR), `DspMath.cs` (FastPow2, note conversion, soft clip),
-`gen_presets.py` (source-only), `Pedal Add-R_Presets.prs.xml` (deployed
-bundle), the `.csproj`.
+`PedalAddR.cs` (machine + params + §42 note recovery + Work + formant SVF),
+`Voice.cs` (partial-bank engine + drift + phase + live brightness +
+click-protect + LFO + ADSR), `PedalAddRGui.cs` (About banner — embedded
+parameter-window GUI via IMachineGUIFactory per Core §26), `DspMath.cs`
+(FastPow2, note conversion, soft clip), `gen_presets.py` (source-only),
+`Pedal Add-R_Presets.prs.xml` (deployed bundle), the `.csproj`.
