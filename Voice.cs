@@ -36,6 +36,20 @@ namespace PedalAddR
         const float TrigTauSec  = 0.001f;
         const float TrigSeedThr = 0.005f;
 
+        // Precomputed log2(n) for partial indices n = 1..MaxPartials.
+        // Used in ControlUpdate to replace the two per-partial `MathF.Pow(n, k)`
+        // calls (slope amplitude normalisation and damping tilt) with the much
+        // cheaper FastPow2(k * log2(n)). FastPow2 is ~0.04% accurate (SH101 §1)
+        // which is well under audibility for amplitude and damping coefficients.
+        // Slot [0] is unused (partials are 1-indexed via `nn = p + 1`).
+        static readonly float[] _log2N = BuildLog2Table();
+        static float[] BuildLog2Table()
+        {
+            var t = new float[MaxPartials + 1];
+            for (int i = 1; i <= MaxPartials; i++) t[i] = MathF.Log2(i);
+            return t;
+        }
+
         float _sr = 44100f;
 
         readonly float[] _re    = new float[MaxPartials];
@@ -255,10 +269,14 @@ namespace PedalAddR
 
             int   active  = _partials;
             float sumBase = 0f;
+            // Hoist inharmonicity branch outside the loop (cheap to test, free
+            // to skip a Sqrt for organ-style additive patches where B = 0).
+            bool inharmOn = effB > 1e-9f;
             for (int p = 0; p < _partials; p++)
             {
                 int   nn    = p + 1;
-                float ratio = nn * MathF.Sqrt(1f + effB * nn * nn);
+                float log2N = _log2N[nn];   // precomputed; used twice below
+                float ratio = inharmOn ? nn * MathF.Sqrt(1f + effB * nn * nn) : nn;
                 float freq  = f0 * ratio;
 
                 if (driftOn)
@@ -278,7 +296,8 @@ namespace PedalAddR
 
                 if (damp)
                 {
-                    float dN = _dGlobal * MathF.Pow(nn, _dampTilt);
+                    // n^t via FastPow2(t * log2(n)) — saves a MathF.Pow per partial.
+                    float dN = _dGlobal * DspMath.FastPow2(_dampTilt * log2N);
                     _env[p] *= MathF.Exp(-dN * CtrlBlock / _sr);
                 }
 
@@ -286,7 +305,10 @@ namespace PedalAddR
                 float k    = 1.5f - 0.5f * mag2;
                 _re[p] *= k; _im[p] *= k;
 
-                float ba = 1f / MathF.Pow(nn, effSlope);
+                // 1/n^s = 2^(-s * log2(n)). Always-fires Pow → FastPow2.
+                // This is the highest-volume transcendental in the control loop;
+                // replacing it is the largest single win in the v1.0 profile pass.
+                float ba = DspMath.FastPow2(-effSlope * log2N);
                 _amp[p]  = ba * _env[p];
                 sumBase += ba;
             }

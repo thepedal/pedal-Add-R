@@ -12,9 +12,9 @@ synthesises a static spectrum in the frequency domain via iFFT/OLA. Working in
 the time domain instead gives Add-R what invFFT structurally can't: zero
 latency, sharp attacks, and per-partial behaviour that isn't capped at the hop
 rate. The trade is cost — invFFT amortises one transform across all partials,
-Add-R pays per partial — but profiler2 measurements at the stress patch (8
-voices × 64 partials × Drift up) put Add-R at ~8 % of one core, well within
-budget; the time-domain bet has paid off.
+Add-R pays per partial — but at the stress patch (8 voices × 64 partials with
+LFO + formant active) Add-R stays well within budget on a modern core; the
+time-domain bet has paid off.
 
 ## Engine
 
@@ -120,9 +120,8 @@ Ships with `Pedal Add-R.prs.xml` — 29 patches showing the range:
 
 - **Pad** — Soft Organ, Glass, String Ensemble, Choir Aaah (sustained side);
   Pulsing Glass, Ensemble Shimmer (LFO-driven); Cathedral (vast slow pad)
-- **Bell / Mallet / Pluck** — Crystal, Tubular, Marimba, Harp, Pizzicato
-  (struck side); Kalimba, Vibraphone, Steel Drum (v0.8 mallet expansion);
-  Vox (formant-coloured pluck)
+- **Bell / Mallet / Pluck** — Crystal, Tubular, Marimba, Harp, Pizzicato,
+  Kalimba, Vibraphone, Steel Drum (struck side); Vox (formant-coloured pluck)
 - **Bass** — Sub, Reese (drift wobble), Slap (formant pluck), Sine Sub (clean)
 - **Lead** — Vibrato Sax (LFO pitch); Acid Squelch (LFO wah), Whistle (airy)
 - **FX** — Wobbling Glass, Slow Drone, SH Glitch, Wobble (LFO triangle on
@@ -135,8 +134,9 @@ pads run low (~30 — uniform, ethereal), plucks and leads run high (~100–110
 Sens for any new instance is 80 (moderate response).
 
 Right-click the machine to load. Per Build §3.3's append-only rule, the
-preset indices stay stable across future versions; adding formant /
-excitation later just gives existing presets the new params' defaults.
+preset indices stay stable across future versions — any future parameter
+addition slots onto the end of the list, so existing presets keep their
+values and pick up the new parameter's default automatically.
 
 The bundle is generated from `gen_presets.py` (sparse-override pattern,
 Build §3.4) — edit that and re-run rather than hand-editing the XML.
@@ -152,40 +152,34 @@ space). If ReBuzz is installed elsewhere, change the path in the two
 `<Copy>` tasks in the `.csproj`. Requires the .NET 10 SDK; references
 `BuzzGUI.Interfaces.dll` from the ReBuzz install.
 
-## Status and roadmap
+## Status
 
-**Done:** the partial-bank engine, the additive↔modal morph, 8-voice polyphony
-with chord recovery, transport-stop fade, mixer headroom, per-voice Drift,
-Phase spread, live Brightness, starter preset bank, click-protect retrigger
-(v0.5), per-voice key-synced LFO with 4 destinations (v0.6), Formant peak
-filter on the mix (v0.7), About banner in the parameter window with version
-display (v0.7.1), per-track velocity + Vel Sens scaling + bank expanded to
-29 patches (v0.8).
+v1.0. The engine is stable and the parameter surface is final. The
+29-preset bank covers the range from sustained additive pads through
+struck/plucked modes to formant-coloured plucks and bells.
 
-Retrigger semantics: a *fresh* trigger (voice was idle) seeds the bank
-immediately and lets the ADSR Attack ramp up from level 0 — output starts
-at silence and ramps cleanly, so the partial re-seed is inaudible. A
-*retrigger while the voice is still audible* would click without intervention,
-because re-seeding phasors mid-flight is a hard discontinuity in the signal.
-v0.5 wraps that behind a voice-level click-protect gain (Core §27.1): the
-current output fades to ~0 over ~1 ms, *then* the bank re-seeds, *then* the
-gain ramps back up over ~1 ms while the ADSR attacks from 0. The phasor
-discontinuity still happens — it has to — but at the trough where the gain
-masks it by ~46 dB. Total retrigger gap ~5 ms, well under the perceptual
-latency floor for percussive material.
+For dense patches (8-voice held chord + high partial counts + LFO +
+formant active), if you hit audio dropouts the bottleneck is typically
+the per-buffer CPU budget rather than Add-R's steady-state cost — 128
+samples at 44.1 kHz is a 2.9 ms budget, which any periodic .NET GC pause
+will exceed. Increase the ASIO buffer size in your driver's own config
+panel (not ReBuzz Settings) to 256 or 512 samples for headroom; the
+extra 3–8 ms latency is fine for synth work.
 
-**Path to 1.0:**
+Reserved for future versions:
 
-- **v1.0 — Polish.** Final profile pass on the stress patch with everything
-  turned up (LFO active + formant + 8 voices + 64 partials), doc tidy, ship.
-
-Held for v1.x: **Vel→Bright / Vel→Attack** (more expressivity routing) —
-deliberate omission from v0.8 to keep the surface tight; easy add later.
-**Excitation blend** (strike ↔ drive) — pushes the engine from additive
-toward complex-distortion; that's a separate identity and worth its own
-release. **LFO → Formant** routing — needs new machinery for global-LFO
-modulation since the formant is machine-level while the existing LFO is
-per-voice.
+- **SIMD vectorisation of the per-sample inner loop** — `Vector<float>`
+  from `System.Numerics` over the per-partial arrays should give another
+  2–4× on the per-sample side. Reserved for v1.1; the v1.0 profile pass
+  established a baseline.
+- **Vel→Bright / Vel→Attack** — more expressivity routing. Deliberate
+  omission from v1.0 to keep the surface tight; easy add later.
+- **Excitation blend** (strike ↔ drive) — pushes the engine from additive
+  toward complex-distortion; that's a separate identity and worth its
+  own release.
+- **LFO → Formant** routing — needs new machinery for global-LFO
+  modulation since the formant is machine-level while the existing LFO
+  is per-voice.
 
 ## Files
 
