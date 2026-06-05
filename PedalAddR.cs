@@ -17,7 +17,7 @@ namespace PedalAddR
     public class PedalAddRMachine : IBuzzMachine
     {
         // ── Machine metadata (read by the About banner in PedalAddRGui.cs) ─
-        public const string Version = "1.0";
+        public const string Version = "1.1";
 
         public const int MAX_VOICES = 8;
 

@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace PedalAddR
 {
@@ -324,11 +325,25 @@ namespace PedalAddR
                     totalAmp += _amp[p];
                 }
             }
+            // Zero the unused tail so the SIMD Render loop can safely process
+            // all MaxPartials lanes — partials beyond `active` contribute 0
+            // to the sum, and the rotation step there is harmless wasted work.
+            if (active < MaxPartials)
+                Array.Clear(_amp, active, MaxPartials - active);
             if (totalAmp < 1e-5f && !_retrigPending) _ampEnv.ForceIdle();
         }
 
         public void Render(float[] outBuf, int n)
         {
+            // SIMD width is hardware-dependent: 4 lanes on SSE2, 8 on AVX2,
+            // 16 on AVX-512. MaxPartials (64) is divisible by all of these,
+            // so the inner loop processes the full bank without a scalar tail.
+            // Partials beyond `_active` have `_amp = 0` (cleared at the end
+            // of ControlUpdate) so their contribution to the sum is exactly
+            // zero; the rotation step on those lanes is harmless wasted work,
+            // bounded at the SIMD-width granularity.
+            int simdWidth = Vector<float>.Count;
+
             for (int i = 0; i < n; i++)
             {
                 _trigGain += (_trigGainTarget - _trigGain) * _trigCoef;
@@ -346,15 +361,33 @@ namespace PedalAddR
                 if (_ctrl <= 0) { ControlUpdate(); _ctrl = CtrlBlock; }
                 _ctrl--;
 
-                float s = 0f;
-                for (int p = 0; p < _active; p++)
+                // Inner partial loop — fully data-parallel across partials.
+                // For each SIMD chunk:
+                //   nr = re*cos - im*sin
+                //   ni = re*sin + im*cos
+                //   sum += amp * nr
+                // The two-multiply / one-add / one-sub complex rotation is
+                // applied element-wise; sumV accumulates the contributions
+                // in parallel; Vector.Sum collapses to a scalar at the end.
+                Vector<float> sumV = Vector<float>.Zero;
+                for (int p = 0; p < MaxPartials; p += simdWidth)
                 {
-                    float re = _re[p], im = _im[p];
-                    float nr = re * _cos[p] - im * _sin[p];
-                    float ni = re * _sin[p] + im * _cos[p];
-                    _re[p] = nr; _im[p] = ni;
-                    s += _amp[p] * nr;
+                    var re  = new Vector<float>(_re,  p);
+                    var im  = new Vector<float>(_im,  p);
+                    var co  = new Vector<float>(_cos, p);
+                    var si  = new Vector<float>(_sin, p);
+                    var amp = new Vector<float>(_amp, p);
+
+                    var nr = re * co - im * si;
+                    var ni = re * si + im * co;
+
+                    nr.CopyTo(_re, p);
+                    ni.CopyTo(_im, p);
+
+                    sumV += amp * nr;
                 }
+                float s = Vector.Sum(sumV);
+
                 outBuf[i] = s * _ampEnv.Process() * _trigGain * _velocity;
             }
         }
