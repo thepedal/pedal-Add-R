@@ -17,7 +17,7 @@ namespace PedalAddR
     public class PedalAddRMachine : IBuzzMachine
     {
         // ── Machine metadata (read by the About banner in PedalAddRGui.cs) ─
-        public const string Version = "1.1";
+        public const string Version = "1.2";
 
         public const int MAX_VOICES = 8;
 
@@ -118,6 +118,7 @@ namespace PedalAddR
         public int LfoSpeed { get; set; } = 30;
 
         [ParameterDecl(Name = "LFO Wave", MinValue = 0, MaxValue = 3, DefValue = 0,
+            ValueDescriptions = new[] { "Sine", "Triangle", "Square", "Sample & Hold" },
             Description = "0 = Sine, 1 = Triangle, 2 = Square, 3 = Sample & Hold")]
         public int LfoWave { get; set; } = 0;
 
@@ -160,6 +161,13 @@ namespace PedalAddR
         [ParameterDecl(Name = "Vel Sens", MinValue = 0, MaxValue = 127, DefValue = 80,
             Description = "How much velocity affects amplitude. 0 = uniform loudness (velocity ignored), 127 = full velocity scaling")]
         public int VelSens { get; set; } = 80;
+
+        // ── New in v1.2 — LFO Mode, appended at the end so v1.1.x preset indices stay valid ──
+
+        [ParameterDecl(Name = "LFO Mode", MinValue = 0, MaxValue = 3, DefValue = 0,
+            ValueDescriptions = new[] { "Free (Hz)", "Free (ms)", "Free (samples)", "Tempo-sync (ticks)" },
+            Description = "LFO Speed interpretation. Free modes are sample-rate-locked at the Hz set by LFO Speed (display only differs). Tempo-sync mode locks the LFO rate to a musical tick division derived from the host tempo.")]
+        public int LfoMode { get; set; } = 0;
 
         // ── Track parameters ────────────────────────────────────────────────
         [ParameterDecl(Name = "Note", IsStateless = true,
@@ -246,6 +254,93 @@ namespace PedalAddR
         // LFO speed: log-mapped 0.02 Hz to 20 Hz across 0..127.
         static float LfoSpeedHz(int p) => 0.02f * MathF.Pow(1000f, p / 127f);
 
+        // ── LFO tempo-sync tick divisions ──────────────────────────────────
+        // In Tempo-sync mode the 0..127 LFO Speed slider quantises to one of
+        // 16 musical divisions (8 slider values per division). Sorted slowest
+        // to fastest so increasing the slider speeds the LFO up, matching the
+        // Free-mode direction. At TPB=4 (default), 16 ticks = 1 bar, 4 ticks
+        // = 1 beat, 1 tick = 1/16 note.
+        static readonly int[] TickDivisions = {
+            256, 192, 128, 96, 64, 48, 32, 24, 16, 12, 8, 6, 4, 3, 2, 1
+        };
+        static int TicksPerCycle(int lfoSpeed)
+        {
+            int idx = (lfoSpeed * TickDivisions.Length) / 128;
+            if (idx >= TickDivisions.Length) idx = TickDivisions.Length - 1;
+            return TickDivisions[idx];
+        }
+
+        // ── DescribeValue (Tracker §7.4) ─────────────────────────────────────
+        // ReBuzz calls this to populate the second status-bar panel when the
+        // user hovers a parameter. Returning null falls back to the default
+        // integer or ValueDescriptions display. We override for parameters
+        // whose 0..127 raw value hides a natural ground-truth unit (time,
+        // Hz, Q, semitones, multiplier). Parameters with no clean external
+        // unit (Brightness slope, Damping coefficient, Mod Bright/Inharm/
+        // Drift internal deltas, LFO Sync randomness amount, Inharmonic B)
+        // are left at their byte values — they're feel knobs.
+        public string DescribeValue(IParameter p, int value)
+        {
+            switch (p?.Name)
+            {
+                case "LFO Speed":
+                {
+                    if (LfoMode == 3)   // Tempo-sync (ticks)
+                        return $"{TicksPerCycle(value)} ticks";
+
+                    float hz  = LfoSpeedHz(value);
+                    float sec = 1f / hz;
+                    switch (LfoMode)
+                    {
+                        case 1: // Free (ms)
+                            return sec >= 1f ? $"{sec:0.00} s" : $"{sec * 1000f:0} ms";
+                        case 2: // Free (samples)
+                            float sr = _lastSr > 0 ? _lastSr : 44100f;
+                            return $"{sec * sr:0} samples";
+                        default: // Free (Hz) — the original v1.1.1 format
+                            return $"{hz:0.00} Hz / {FormatTime(sec)}";
+                    }
+                }
+
+                case "Attack":
+                case "Decay":
+                case "Release":
+                    return FormatTime(TimeSec(value));
+
+                case "Glide":
+                    if (value == 0) return "instant";
+                    // Glide has its own log mapping (×2^11, not the ADSR ×2^13).
+                    return FormatTime(MinTimeSec * MathF.Pow(2f, (value / 127f) * 11f));
+
+                case "Formant Cutoff":
+                {
+                    float hz = 100f * MathF.Pow(80f, value / 127f);
+                    return hz >= 1000f ? $"{hz / 1000f:0.00} kHz" : $"{hz:0} Hz";
+                }
+
+                case "Formant Q":
+                {
+                    float q = 0.5f * MathF.Pow(60f, value / 127f);
+                    return $"Q = {q:0.00}";
+                }
+
+                case "Formant Amount":
+                    if (value == 0) return "off";
+                    return $"{(value / 127f) * 4f:0.00}x";
+
+                case "Mod Pitch":
+                    if (value == 64) return "off";
+                    float st = (value - 64) / 64f * 6f;
+                    return $"{(st >= 0 ? "+" : "")}{st:0.00} st";
+            }
+            return null;
+        }
+
+        // Time-formatter shared by LFO Speed (Free ms/Hz modes) and the ADSR /
+        // Glide cases above. ms below 1 second, seconds above.
+        static string FormatTime(float sec)
+            => sec >= 1f ? $"{sec:0.00} s" : $"{sec * 1000f:0} ms";
+
         public bool Work(Sample[] output, int n, WorkModes mode)
         {
             float sr = _host?.MasterInfo?.SamplesPerSec ?? 44100f;
@@ -267,8 +362,23 @@ namespace PedalAddR
             float aSec = TimeSec(Attack), dSec = TimeSec(Decay), rSec = TimeSec(Release);
             float sustainN = Sustain / 127f;
 
-            // LFO mappings. Bipolar destinations: (val-64)/64 → -1..+0.984
-            float lfoSpeedHz  = LfoSpeedHz(LfoSpeed);
+            // LFO mappings. Bipolar destinations: (val-64)/64 → -1..+0.984.
+            // In tempo-sync mode (LfoMode=3), the slider maps to a tick
+            // division and the effective Hz is derived from the host's
+            // current SamplesPerTick — read fresh each Work per Core §29.5
+            // so BPM changes during playback are picked up automatically.
+            float lfoSpeedHz;
+            if (LfoMode == 3)
+            {
+                int ticks = TicksPerCycle(LfoSpeed);
+                int samplesPerTick = _host?.MasterInfo.SamplesPerTick ?? 5250;
+                float samplesPerCycle = (float)ticks * samplesPerTick;
+                lfoSpeedHz = samplesPerCycle > 0f ? sr / samplesPerCycle : LfoSpeedHz(LfoSpeed);
+            }
+            else
+            {
+                lfoSpeedHz = LfoSpeedHz(LfoSpeed);
+            }
             int   lfoWave     = LfoWave;
             float lfoSync     = LfoSync / 127f;
             float lfoPitchAmt  = (LfoToPitch  - 64) / 64f * LfoMaxPitchSemi;

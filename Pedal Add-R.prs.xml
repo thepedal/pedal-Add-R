@@ -27,6 +27,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="30" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -59,6 +60,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="50" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -91,6 +93,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="60" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -123,6 +126,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="30" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -155,6 +159,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="100" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -187,6 +192,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="95" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -219,6 +225,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="110" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -251,6 +258,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="95" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -283,6 +291,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="110" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -315,6 +324,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="60" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -347,6 +357,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="70" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -379,6 +390,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="30" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -411,6 +423,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="90" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -443,6 +456,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="40" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -475,6 +489,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="50" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -507,6 +522,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="90" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -539,6 +555,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="50" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="80" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="50" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -571,6 +588,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="70" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="90" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="50" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -603,6 +621,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="40" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="70" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="100" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -635,6 +654,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="100" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -667,6 +687,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="45" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="75" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="110" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -699,6 +720,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="40" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -731,6 +753,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="110" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -763,6 +786,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="70" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -795,6 +819,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="100" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -827,6 +852,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="100" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -859,6 +885,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="100" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -891,6 +918,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="30" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>
@@ -923,6 +951,7 @@
         <Parameter Name="Formant Q" Group="1" Index="21" Track="0" Value="30" />
         <Parameter Name="Formant Amount" Group="1" Index="22" Track="0" Value="0" />
         <Parameter Name="Vel Sens" Group="1" Index="23" Track="0" Value="80" />
+        <Parameter Name="LFO Mode" Group="1" Index="24" Track="0" Value="0" />
       </Parameters>
       <Attributes />
       <Comment></Comment>

@@ -48,6 +48,7 @@ PARAM_INDEX = {
     "Formant Amount": 22,
     # ── v0.8 (Velocity) ───────────────────────
     "Vel Sens":       23,
+    "LFO Mode":       24,
 }
 
 # Machine DefValues — mirror PedalAddR.cs.
@@ -76,6 +77,7 @@ DEFAULTS = {
     "Formant Q":      30, # ~3.0, moderate sharpness
     "Formant Amount":  0, # 0 = off (formant inaudible)
     "Vel Sens":       80, # moderate velocity response
+    "LFO Mode":        0, # Free (Hz) — original behaviour; v1.2 preset bank stays free-running
 }
 
 # Sparse per-preset overrides. Missing keys take DEFAULTS.

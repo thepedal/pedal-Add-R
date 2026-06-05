@@ -43,7 +43,11 @@ z ← z · (cos ω + j·sin ω)        out += amp · real(z)
   127 = each voice gets a fully independent random phase — chord shimmer).
   Four wave shapes (Sine, Triangle, Square, Sample & Hold) and four bipolar
   destinations (pitch, brightness, inharmonicity, drift depth) routable
-  simultaneously following the M1 §14 routing pattern.
+  simultaneously following the M1 §14 routing pattern. The `LFO Mode`
+  parameter switches between four interpretations of LFO Speed: free
+  running with Hz / ms / samples display, or tempo-synced to a musical
+  tick division. In tempo-sync mode the rate is derived from the host's
+  current `SamplesPerTick` so it tracks BPM changes during playback.
 - **Formant** is one resonant peak applied to the mix (post partial
   accumulation, pre Volume / soft-clip), at audio rate. A trapezoidal-
   prewarped state-variable filter — unconditionally stable up to Nyquist —
@@ -103,6 +107,7 @@ over ~5 ms (Core §27).
 | Formant Q    | 0–127  | Log-mapped 0.5 (wide) to 30 (razor-sharp)                   |
 | Formant Amount | 0–127 | Peak prominence over flat; 0 = off, full = ~14 dB boost   |
 | Vel Sens     | 0–127  | How much velocity affects amplitude. 0 = uniform, 127 = full|
+| LFO Mode     | 0–3    | Free Hz / Free ms / Free samples / Tempo-sync (ticks)       |
 | Note         | track  | z=C-4, s=C#-4 …                                             |
 | Velocity     | track  | Per-note velocity, latches between explicit changes         |
 
